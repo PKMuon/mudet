@@ -24,24 +24,27 @@
 // ********************************************************************
 //
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#include "TrackingAction.hh"
 
-#include "G4UserEventAction.hh"
-#include "globals.hh"
+#include "G4Track.hh"
+#include "G4ios.hh"
 
-class RunAction;
+TrackingAction::TrackingAction()
+{
 
-class EventAction : public G4UserEventAction {
-public:
-  EventAction(RunAction *runAction);
-  ~EventAction() override;
+}
 
-  void BeginOfEventAction(const G4Event *event) override;
-  void EndOfEventAction(const G4Event *event) override;
+TrackingAction::~TrackingAction()
+{
 
-private:
-  [[maybe_unused]] RunAction *fRunAction;
-};
+}
 
-#endif
+void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track)
+{
+  G4cout << __FUNCTION__ << ": " << track->GetTrackID() << G4endl;
+}
+
+void TrackingAction::PostUserTrackingAction([[maybe_unused]] const G4Track *track)
+{
+
+}

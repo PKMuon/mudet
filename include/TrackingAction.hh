@@ -24,24 +24,21 @@
 // ********************************************************************
 //
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#ifndef TrackingAction_h
+#define TrackingAction_h 1
 
-#include "G4UserEventAction.hh"
+#include "G4UserTrackingAction.hh"
 #include "globals.hh"
 
-class RunAction;
+class G4Tracking;
 
-class EventAction : public G4UserEventAction {
+class TrackingAction : public G4UserTrackingAction {
 public:
-  EventAction(RunAction *runAction);
-  ~EventAction() override;
+  TrackingAction();
+  ~TrackingAction() override;
 
-  void BeginOfEventAction(const G4Event *event) override;
-  void EndOfEventAction(const G4Event *event) override;
-
-private:
-  [[maybe_unused]] RunAction *fRunAction;
+  void PreUserTrackingAction(const G4Track *) override;
+  void PostUserTrackingAction(const G4Track *) override;
 };
 
 #endif

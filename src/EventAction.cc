@@ -25,22 +25,23 @@
 //
 
 #include "EventAction.hh"
-#include "RunAction.hh"
 
-#include "G4Event.hh"
-#include "G4RunManager.hh"
-
-EventAction::EventAction(RunAction *runAction)
-  : fRunAction(runAction)
-{}
-
-void EventAction::BeginOfEventAction(const G4Event *)
+EventAction::EventAction(RunAction *runAction) : fRunAction(runAction)
 {
-  fEdep = 0.;
+
 }
 
-void EventAction::EndOfEventAction(const G4Event *)
+EventAction::~EventAction()
 {
-  // accumulate statistics in run action
-  fRunAction->AddEdep(fEdep);
+
+}
+
+void EventAction::BeginOfEventAction([[maybe_unused]] const G4Event *event)
+{
+
+}
+
+void EventAction::EndOfEventAction([[maybe_unused]] const G4Event *event)
+{
+
 }
