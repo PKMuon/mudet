@@ -33,20 +33,21 @@
 #include "G4RunManager.hh"
 #include "G4LogicalVolume.hh"
 
-SteppingAction::SteppingAction(EventAction* eventAction)
-: fEventAction(eventAction)
+SteppingAction::SteppingAction(EventAction *eventAction)
+  : fEventAction(eventAction)
 {}
 
-void SteppingAction::UserSteppingAction(const G4Step* step)
+void SteppingAction::UserSteppingAction(const G4Step *step)
 {
-  if (!fScoringVolume) {
-    const auto detConstruction = static_cast<const DetectorConstruction*>(
-      G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+  if (!fScoringVolume)
+  {
+    const auto detConstruction = static_cast<const DetectorConstruction *>(
+                                   G4RunManager::GetRunManager()->GetUserDetectorConstruction());
     fScoringVolume = detConstruction->GetScoringVolume();
   }
 
   // get volume of the current step
-  G4LogicalVolume* volume
+  G4LogicalVolume *volume
     = step->GetPreStepPoint()->GetTouchableHandle()
       ->GetVolume()->GetLogicalVolume();
 
