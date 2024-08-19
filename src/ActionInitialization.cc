@@ -33,18 +33,11 @@
 #include "EventAction.hh"
 #include "SteppingAction.hh"
 
-namespace B1
-{
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void ActionInitialization::BuildForMaster() const
 {
   auto runAction = new RunAction;
   SetUserAction(runAction);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ActionInitialization::Build() const
 {
@@ -57,8 +50,4 @@ void ActionInitialization::Build() const
   SetUserAction(eventAction);
 
   SetUserAction(new SteppingAction(eventAction));
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 }

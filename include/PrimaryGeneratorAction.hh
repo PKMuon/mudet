@@ -38,14 +38,6 @@ class G4ParticleGun;
 class G4Event;
 class G4Box;
 
-namespace B1
-{
-
-/// The primary generator action class with particle gun.
-///
-/// The default kinematic is a 6 MeV gamma, randomly distribued
-/// in front of the phantom across 80% of the (X,Y) phantom size.
-
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
@@ -62,9 +54,5 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ParticleGun* fParticleGun = nullptr; // pointer a to G4 gun class
     G4Box* fEnvelopeBox = nullptr;
 };
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

@@ -32,11 +32,6 @@
 
 #include "G4VUserActionInitialization.hh"
 
-namespace B1
-{
-
-/// Action initialization class.
-
 class ActionInitialization : public G4VUserActionInitialization
 {
   public:
@@ -46,9 +41,5 @@ class ActionInitialization : public G4VUserActionInitialization
     void BuildForMaster() const override;
     void Build() const override;
 };
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

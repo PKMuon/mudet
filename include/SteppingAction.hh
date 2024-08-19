@@ -34,13 +34,7 @@
 #include "globals.hh"
 
 class G4LogicalVolume;
-
-namespace B1
-{
-
 class EventAction;
-
-/// Stepping action class
 
 class SteppingAction : public G4UserSteppingAction
 {
@@ -55,9 +49,5 @@ class SteppingAction : public G4UserSteppingAction
     EventAction* fEventAction = nullptr;
     G4LogicalVolume* fScoringVolume = nullptr;
 };
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

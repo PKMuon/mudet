@@ -33,14 +33,12 @@
 #include "G4RunManagerFactory.hh"
 #include "G4SteppingVerbose.hh"
 #include "G4UImanager.hh"
-#include "QBBC.hh"
+#include "QGSP_BERT_HP.hh"
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
 #include "Randomize.hh"
-
-using namespace B1;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -69,7 +67,7 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(new DetectorConstruction());
 
   // Physics list
-  auto physicsList = new QBBC;
+  auto physicsList = new QGSP_BERT_HP;
   physicsList->SetVerboseLevel(1);
   runManager->SetUserInitialization(physicsList);
 

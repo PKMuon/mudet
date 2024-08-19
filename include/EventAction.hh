@@ -33,12 +33,7 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 
-namespace B1
-{
-
 class RunAction;
-
-/// Event action class
 
 class EventAction : public G4UserEventAction
 {
@@ -56,10 +51,4 @@ class EventAction : public G4UserEventAction
     G4double   fEdep = 0.;
 };
 
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif
-
-

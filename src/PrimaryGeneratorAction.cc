@@ -39,11 +39,6 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
-namespace B1
-{
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
   G4int n_particle = 1;
@@ -59,14 +54,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun->SetParticleEnergy(6.*MeV);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete fParticleGun;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
@@ -109,9 +100,3 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-}
-
-

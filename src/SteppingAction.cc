@@ -36,16 +36,9 @@
 #include "G4RunManager.hh"
 #include "G4LogicalVolume.hh"
 
-namespace B1
-{
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 SteppingAction::SteppingAction(EventAction* eventAction)
 : fEventAction(eventAction)
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
@@ -66,8 +59,4 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
   fEventAction->AddEdep(edepStep);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 }
