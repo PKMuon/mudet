@@ -28,22 +28,20 @@
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "G4ThreeVector.hh"
 #include "globals.hh"
-
-class G4VPhysicalVolume;
-class G4LogicalVolume;
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
-  DetectorConstruction() = default;
-  ~DetectorConstruction() override = default;
+  DetectorConstruction();
+  ~DetectorConstruction() override;
 
   G4VPhysicalVolume *Construct() override;
+  G4ThreeVector GetSourcePosition() const { return fSourcePosition; }
 
-  G4LogicalVolume *GetScoringVolume() const { return fScoringVolume; }
-
-protected:
-  G4LogicalVolume *fScoringVolume = nullptr;
+private:
+  G4double fWorldX, fWorldY, fWorldZ;
+  G4ThreeVector fSourcePosition;
 };
 
 #endif
