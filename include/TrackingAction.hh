@@ -31,14 +31,18 @@
 #include "globals.hh"
 
 class G4Tracking;
+class EventAction;
 
 class TrackingAction : public G4UserTrackingAction {
 public:
-  TrackingAction();
+  TrackingAction(EventAction *eventAction);
   ~TrackingAction() override;
 
   void PreUserTrackingAction(const G4Track *) override;
   void PostUserTrackingAction(const G4Track *) override;
+
+private:
+  [[maybe_unused]] EventAction *fEventAction;
 };
 
 #endif

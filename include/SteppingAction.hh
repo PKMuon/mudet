@@ -40,7 +40,7 @@ public:
   void UserSteppingAction(const G4Step *) override;
 
 private:
-  [[maybe_unused]] EventAction *fEventAction = nullptr;
+  [[maybe_unused]] EventAction *fEventAction;
 };
 
 #endif

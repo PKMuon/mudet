@@ -48,5 +48,5 @@ void ActionInitialization::Build() const
   SetUserAction(eventAction);
 
   SetUserAction(new SteppingAction(eventAction));
-  SetUserAction(new TrackingAction);
+  SetUserAction(new TrackingAction(eventAction));
 }

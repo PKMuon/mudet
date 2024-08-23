@@ -29,7 +29,7 @@
 #include "G4Track.hh"
 #include "G4ios.hh"
 
-TrackingAction::TrackingAction()
+TrackingAction::TrackingAction(EventAction *eventAction) : fEventAction(eventAction)
 {
 
 }

@@ -40,7 +40,7 @@ public:
   void GeneratePrimaries(G4Event *) override;
 
 private:
-  G4ParticleGun *fParticleGun = nullptr;
+  G4ParticleGun *fParticleGun;
 };
 
 #endif
