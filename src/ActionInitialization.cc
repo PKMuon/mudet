@@ -33,8 +33,7 @@
 
 void ActionInitialization::BuildForMaster() const
 {
-  auto runAction = new RunAction;
-  SetUserAction(runAction);
+
 }
 
 void ActionInitialization::Build() const

@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------
 # Setup the project
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.19)
 project(mudet)
 
 #----------------------------------------------------------------------------
@@ -65,17 +65,25 @@ endif()
 add_compile_options(-g -Wall -Wshadow -Wextra -Werror)
 
 #----------------------------------------------------------------------------
+# Process customized TObject derivates
+#
+add_custom_command(OUTPUT ObjectDict.cc ObjectDict_rdict.pcm COMMAND rootcint -f
+ObjectDict.cc ${PROJECT_SOURCE_DIR}/include/Object.hh ${PROJECT_SOURCE_DIR}/src/ObjectLinkDef.h
+DEPENDS include/Object.hh src/ObjectLinkDef.h
+IMPLICIT_DEPENDS include/Object.hh)
+
+#----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(include)
 include_directories(SYSTEM ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR})
-file(GLOB sources CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/src/*.cc)
-file(GLOB headers CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/include/*.hh)
+file(GLOB sources CONFIGURE_DEPENDS src/*.cc)
+file(GLOB headers CONFIGURE_DEPENDS include/*.hh)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(mudet mudet.cc ${sources} ${headers})
+add_executable(mudet mudet.cc ${sources} ${PROJECT_BINARY_DIR}/ObjectDict.cc ${headers})
 target_link_libraries(mudet ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
 #----------------------------------------------------------------------------
@@ -86,5 +94,5 @@ target_link_libraries(mudet ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${YAML_CPP_LIB
 file(GLOB scripts CONFIGURE_DEPENDS *.sh *.mac)
 foreach(script ${scripts})
     get_filename_component(script ${script} NAME)
-    configure_file(${PROJECT_SOURCE_DIR}/${script} ${PROJECT_BINARY_DIR}/${script} COPYONLY)
+    configure_file(${script} ${script} COPYONLY)
 endforeach()

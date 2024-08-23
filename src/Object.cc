@@ -24,28 +24,26 @@
 // ********************************************************************
 //
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#include "Object.hh"
 
-#include "G4UserEventAction.hh"
-#include "globals.hh"
+#include "G4Track.hh"
 
-class Run;
-class RunAction;
+Track &Track::operator=(const G4Track &track)
+{
+  auto position = track.GetPosition();
+  auto momentum = track.GetMomentum();
 
-class EventAction : public G4UserEventAction {
-public:
-  EventAction(RunAction *runAction);
-  ~EventAction() override;
+  Id = track.GetTrackID();
+  Mother = track.GetParentID();
+  Pid = track.GetParticleDefinition()->GetPDGEncoding();
+  Px = momentum.getX();
+  Py = momentum.getY();
+  Pz = momentum.getZ();
+  E = track.GetTotalEnergy();
+  X = position.getX();
+  Y = position.getY();
+  Z = position.getZ();
+  T = track.GetGlobalTime();
 
-  void BeginOfEventAction(const G4Event *event) override;
-  void EndOfEventAction(const G4Event *event) override;
-
-  Run *GetRun() { return fRun; }
-
-private:
-  [[maybe_unused]] RunAction *fRunAction;
-  [[maybe_unused]] Run *fRun;
-};
-
-#endif
+  return *this;
+}

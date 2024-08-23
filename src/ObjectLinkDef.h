@@ -24,28 +24,12 @@
 // ********************************************************************
 //
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#ifdef __CINT__
 
-#include "G4UserEventAction.hh"
-#include "globals.hh"
+#pragma link off all globals;
+#pragma link off all classes;
+#pragma link off all functions;
 
-class Run;
-class RunAction;
-
-class EventAction : public G4UserEventAction {
-public:
-  EventAction(RunAction *runAction);
-  ~EventAction() override;
-
-  void BeginOfEventAction(const G4Event *event) override;
-  void EndOfEventAction(const G4Event *event) override;
-
-  Run *GetRun() { return fRun; }
-
-private:
-  [[maybe_unused]] RunAction *fRunAction;
-  [[maybe_unused]] Run *fRun;
-};
+#pragma link C++ class Track+;
 
 #endif

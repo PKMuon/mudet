@@ -24,28 +24,30 @@
 // ********************************************************************
 //
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#ifndef Object_h
+#define Object_h 1
 
-#include "G4UserEventAction.hh"
-#include "globals.hh"
+#include <TObject.h>
 
-class Run;
-class RunAction;
+class G4Track;
 
-class EventAction : public G4UserEventAction {
+class Track : public TObject {
 public:
-  EventAction(RunAction *runAction);
-  ~EventAction() override;
+  Track &operator=(const G4Track &);
 
-  void BeginOfEventAction(const G4Event *event) override;
-  void EndOfEventAction(const G4Event *event) override;
+  Int_t Id;
+  Int_t Mother;
+  Int_t Pid;
+  Double_t Px;
+  Double_t Py;
+  Double_t Pz;
+  Double_t E;
+  Double_t X;
+  Double_t Y;
+  Double_t Z;
+  Double_t T;
 
-  Run *GetRun() { return fRun; }
-
-private:
-  [[maybe_unused]] RunAction *fRunAction;
-  [[maybe_unused]] Run *fRun;
+  ClassDef(Track, 1);
 };
 
 #endif

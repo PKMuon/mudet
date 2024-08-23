@@ -24,28 +24,35 @@
 // ********************************************************************
 //
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#ifndef Run_h
+#define Run_h 1
 
-#include "G4UserEventAction.hh"
 #include "globals.hh"
+#include <Rtypes.h>
 
-class Run;
-class RunAction;
+class TFile;
+class TTree;
+class G4Track;
 
-class EventAction : public G4UserEventAction {
+class Run {
 public:
-  EventAction(RunAction *runAction);
-  ~EventAction() override;
+  Run();
+  virtual ~Run();
 
-  void BeginOfEventAction(const G4Event *event) override;
-  void EndOfEventAction(const G4Event *event) override;
-
-  Run *GetRun() { return fRun; }
+  void AutoSave();
+  void FillAndReset();
+  void AddTrack(const G4Track *);
 
 private:
-  [[maybe_unused]] RunAction *fRunAction;
-  [[maybe_unused]] Run *fRun;
+  class Manager;
+  Manager *fManager;
+
+protected:
+  static G4String fDirName;
+  static G4String fTreeName;
+  static G4String fTreeTitle;
+  TFile *fFile;
+  TTree *fTree;
 };
 
 #endif

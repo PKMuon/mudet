@@ -25,10 +25,12 @@
 //
 
 #include "EventAction.hh"
+#include "RunAction.hh"
+#include "Run.hh"
 
 EventAction::EventAction(RunAction *runAction) : fRunAction(runAction)
 {
-
+  fRun = fRunAction->GetRun();
 }
 
 EventAction::~EventAction()
@@ -43,5 +45,5 @@ void EventAction::BeginOfEventAction([[maybe_unused]] const G4Event *event)
 
 void EventAction::EndOfEventAction([[maybe_unused]] const G4Event *event)
 {
-
+  fRun->FillAndReset();
 }

@@ -30,7 +30,7 @@
 #include "G4UserTrackingAction.hh"
 #include "globals.hh"
 
-class G4Tracking;
+class Run;
 class EventAction;
 
 class TrackingAction : public G4UserTrackingAction {
@@ -43,6 +43,7 @@ public:
 
 private:
   [[maybe_unused]] EventAction *fEventAction;
+  [[maybe_unused]] Run *fRun;
 };
 
 #endif

@@ -25,13 +25,12 @@
 //
 
 #include "TrackingAction.hh"
-
-#include "G4Track.hh"
-#include "G4ios.hh"
+#include "EventAction.hh"
+#include "Run.hh"
 
 TrackingAction::TrackingAction(EventAction *eventAction) : fEventAction(eventAction)
 {
-
+  fRun = fEventAction->GetRun();
 }
 
 TrackingAction::~TrackingAction()
@@ -41,7 +40,7 @@ TrackingAction::~TrackingAction()
 
 void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track)
 {
-  G4cout << __FUNCTION__ << ": " << track->GetTrackID() << G4endl;
+  fRun->AddTrack(track);
 }
 
 void TrackingAction::PostUserTrackingAction([[maybe_unused]] const G4Track *track)
