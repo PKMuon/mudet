@@ -67,8 +67,8 @@ add_compile_options(-g -Wall -Wshadow -Wextra -Werror)
 #----------------------------------------------------------------------------
 # Process customized TObject derivates
 #
-add_custom_command(OUTPUT ObjectDict.cc ObjectDict_rdict.pcm COMMAND rootcint -f
-ObjectDict.cc ${PROJECT_SOURCE_DIR}/include/Object.hh ${PROJECT_SOURCE_DIR}/src/ObjectLinkDef.h
+add_custom_command(OUTPUT Object.cxx Object_rdict.pcm COMMAND rootcint -f
+Object.cxx ${PROJECT_SOURCE_DIR}/include/Object.hh ${PROJECT_SOURCE_DIR}/src/ObjectLinkDef.h
 DEPENDS include/Object.hh src/ObjectLinkDef.h
 IMPLICIT_DEPENDS include/Object.hh)
 
@@ -83,7 +83,7 @@ file(GLOB headers CONFIGURE_DEPENDS include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(mudet mudet.cc ${sources} ${PROJECT_BINARY_DIR}/ObjectDict.cc ${headers})
+add_executable(mudet mudet.cc ${sources} ${PROJECT_BINARY_DIR}/Object.cxx ${headers})
 target_link_libraries(mudet ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
 #----------------------------------------------------------------------------
