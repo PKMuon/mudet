@@ -30,7 +30,6 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 
-class Run;
 class RunAction;
 
 class EventAction : public G4UserEventAction {
@@ -41,11 +40,8 @@ public:
   void BeginOfEventAction(const G4Event *event) override;
   void EndOfEventAction(const G4Event *event) override;
 
-  Run *GetRun() { return fRun; }
-
 private:
   [[maybe_unused]] RunAction *fRunAction;
-  [[maybe_unused]] Run *fRun;
 };
 
 #endif

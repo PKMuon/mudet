@@ -34,9 +34,9 @@
 
 DetectorConstruction::DetectorConstruction()
 {
-  fWorldX = 10 * cm;
-  fWorldY = 10 * cm;
-  fWorldZ = 10 * cm;
+  fWorldX = 1 * m;
+  fWorldY = 1 * m;
+  fWorldZ = 1 * m;
   fSourcePosition = {0, 0, -fWorldZ * 0.5};
 }
 
@@ -49,7 +49,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 {
   auto nist = G4NistManager::Instance();
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
-  auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_WATER"), "world");
+  auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_Al"), "world");
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
   return world_p;
 }

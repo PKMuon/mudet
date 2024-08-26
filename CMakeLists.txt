@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.19)
-project(mudet)
+project(mupen)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -65,14 +65,6 @@ endif()
 add_compile_options(-g -Wall -Wshadow -Wextra -Werror)
 
 #----------------------------------------------------------------------------
-# Process customized TObject derivates
-#
-add_custom_command(OUTPUT Object.cxx Object_rdict.pcm COMMAND rootcint -f
-Object.cxx ${PROJECT_SOURCE_DIR}/include/Object.hh ${PROJECT_SOURCE_DIR}/src/ObjectLinkDef.h
-DEPENDS include/Object.hh src/ObjectLinkDef.h
-IMPLICIT_DEPENDS include/Object.hh)
-
-#----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
 include_directories(include)
@@ -83,12 +75,12 @@ file(GLOB headers CONFIGURE_DEPENDS include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(mudet mudet.cc ${sources} ${PROJECT_BINARY_DIR}/Object.cxx ${headers})
-target_link_libraries(mudet ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${YAML_CPP_LIBRARIES})
+add_executable(mupen mupen.cc ${sources} ${headers})
+target_link_libraries(mupen ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
-# build mudet. This is so that we can run the executable directly because it
+# build mupen. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
 file(GLOB scripts CONFIGURE_DEPENDS *.sh *.mac)

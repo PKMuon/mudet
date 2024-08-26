@@ -26,11 +26,12 @@
 
 #include "TrackingAction.hh"
 #include "EventAction.hh"
-#include "Run.hh"
+
+#include "G4Track.hh"
 
 TrackingAction::TrackingAction(EventAction *eventAction) : fEventAction(eventAction)
 {
-  fRun = fEventAction->GetRun();
+
 }
 
 TrackingAction::~TrackingAction()
@@ -40,10 +41,14 @@ TrackingAction::~TrackingAction()
 
 void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track)
 {
-  fRun->AddTrack(track);
+  //if(track->GetParticleDefinition()->GetPDGEncoding() == 13) {
+  //  G4cout << __FUNCTION__ << ": " <<  track->GetPosition().getZ() << G4endl;
+  //}
 }
 
 void TrackingAction::PostUserTrackingAction([[maybe_unused]] const G4Track *track)
 {
-
+  if(track->GetParticleDefinition()->GetPDGEncoding() == 13) {
+    G4cout << __FUNCTION__ << ": " <<  track->GetPosition().getZ() << G4endl;
+  }
 }

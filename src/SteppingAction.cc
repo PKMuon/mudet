@@ -26,6 +26,10 @@
 
 #include "SteppingAction.hh"
 
+#include "G4Step.hh"
+#include "G4Track.hh"
+#include "G4SystemOfUnits.hh"
+
 SteppingAction::SteppingAction(EventAction *eventAction) : fEventAction(eventAction)
 {
 
@@ -33,5 +37,8 @@ SteppingAction::SteppingAction(EventAction *eventAction) : fEventAction(eventAct
 
 void SteppingAction::UserSteppingAction([[maybe_unused]] const G4Step *step)
 {
-
+  //G4Track *track = step->GetTrack();
+  //if(track->GetParticleDefinition()->GetPDGEncoding() == 13) {
+  //  G4cout << __FUNCTION__ << ": " <<  track->GetPosition().getZ() << " " << track->GetKineticEnergy() / MeV << G4endl;
+  //}
 }
