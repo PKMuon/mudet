@@ -15,11 +15,16 @@ void EnergyLoss(const char *path)
   TFile *file = TFile::Open(path);
   auto tree = (TTree *)file->Get("tree");
   TClonesArray *Tracks = NULL;
+  Double_t EnergyDeposit, NonIonizingEnergyDeposit;
   tree->SetBranchAddress("Tracks", &Tracks);
+  tree->SetBranchAddress("EnergyDeposit", &EnergyDeposit);
+  tree->SetBranchAddress("NonIonizingEnergyDeposit", &NonIonizingEnergyDeposit);
 
   gStyle->SetHistLineWidth(2);
-  TH1F *Ionization = new TH1F("Ionization", "", 50, 0, 20);
-  TH1F *Radiation = new TH1F("Radiation", "", 50, 0, 20);
+  TH1F *Ionization = new TH1F("Ionization", "", 40, 0, 40);
+  TH1F *Radiation = new TH1F("Radiation", "", 40, 0, 40);
+  TH1F *Edep = new TH1F("EnergyDeposit", "", 40, 0, 40);
+  TH1F *NonIonEdep = new TH1F("NonIonizingEnergyDeposit", "", 40, 0, 40);
 
   for(Long64_t i = 0; tree->GetEntry(i); ++i) {
     Double_t ionization = 0.0, radiation = 0.0;
@@ -36,6 +41,8 @@ void EnergyLoss(const char *path)
     }
     Ionization->Fill(ionization);
     Radiation->Fill(radiation);
+    Edep->Fill(EnergyDeposit);
+    NonIonEdep->Fill(NonIonizingEnergyDeposit);
   }
 
   TCanvas *canvas = new TCanvas;
@@ -53,6 +60,10 @@ void EnergyLoss(const char *path)
   Ionization->Draw();
   Radiation->SetLineColor(3);
   Radiation->Draw("Same");
+  Edep->SetLineColor(4);
+  Edep->Draw("Same");
+  NonIonEdep->SetLineColor(5);
+  NonIonEdep->Draw("Same");
 
   TLegend *legend = canvas->BuildLegend(0.75, 0.78, 0.95, 0.93);
   legend->Draw();
@@ -61,5 +72,7 @@ void EnergyLoss(const char *path)
   delete canvas;
   delete Ionization;
   delete Radiation;
+  delete Edep;
+  delete NonIonEdep;
   file->Close();
 }
