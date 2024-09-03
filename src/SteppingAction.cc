@@ -25,13 +25,15 @@
 //
 
 #include "SteppingAction.hh"
+#include "EventAction.hh"
+#include "Run.hh"
 
 SteppingAction::SteppingAction(EventAction *eventAction) : fEventAction(eventAction)
 {
-
+  fRun = fEventAction->GetRun();
 }
 
 void SteppingAction::UserSteppingAction([[maybe_unused]] const G4Step *step)
 {
-
+  fRun->AddStep(step);
 }

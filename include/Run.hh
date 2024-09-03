@@ -33,6 +33,7 @@
 class TFile;
 class TTree;
 class G4Track;
+class G4Step;
 
 class Run {
 public:
@@ -42,6 +43,7 @@ public:
   void AutoSave();
   void FillAndReset();
   void AddTrack(const G4Track *);
+  void AddStep(const G4Step *);
 
 private:
   class Manager;

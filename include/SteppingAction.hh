@@ -31,6 +31,7 @@
 #include "globals.hh"
 
 class EventAction;
+class Run;
 
 class SteppingAction : public G4UserSteppingAction {
 public:
@@ -41,6 +42,7 @@ public:
 
 private:
   [[maybe_unused]] EventAction *fEventAction;
+  [[maybe_unused]] Run *fRun;
 };
 
 #endif

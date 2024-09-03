@@ -29,6 +29,8 @@
 
 #include "G4ios.hh"
 #include "G4Threading.hh"
+#include "G4Track.hh"
+#include "G4Step.hh"
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -58,9 +60,12 @@ public:
   void PreFill();
   void Reset();
   void AddTrack(const G4Track *track);
+  void AddStep(const G4Step *track);
 
 private:
   TClonesArray Tracks;
+  Double_t EnergyDeposit;
+  Double_t NonIonizingEnergyDeposit;
 };
 
 Run::Run()
@@ -104,7 +109,12 @@ void Run::AddTrack(const G4Track *track)
   fManager->AddTrack(track);
 }
 
-Run::Manager::Manager() : Tracks("Track")
+void Run::AddStep(const G4Step *step)
+{
+  fManager->AddStep(step);
+}
+
+Run::Manager::Manager() : Tracks("Track"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
 {
 
 }
@@ -112,6 +122,8 @@ Run::Manager::Manager() : Tracks("Track")
 void Run::Manager::Branch(TTree *tree)
 {
   tree->Branch("Tracks", &Tracks);
+  tree->Branch("EnergyDeposit", &EnergyDeposit);
+  tree->Branch("NonIonizingEnergyDeposit", &NonIonizingEnergyDeposit);
 }
 
 void Run::Manager::PreFill()
@@ -139,9 +151,17 @@ void Run::Manager::PreFill()
 void Run::Manager::Reset()
 {
   Tracks.Clear();
+  EnergyDeposit = 0;
+  NonIonizingEnergyDeposit = 0;
 }
 
 void Run::Manager::AddTrack(const G4Track *track)
 {
   *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track;
+}
+
+void Run::Manager::AddStep(const G4Step *step)
+{
+  EnergyDeposit += step->GetTotalEnergyDeposit();
+  NonIonizingEnergyDeposit += step->GetNonIonizingEnergyDeposit();
 }
