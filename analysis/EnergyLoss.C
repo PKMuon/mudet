@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void EnergyLoss(const char *path)
+void EnergyLoss(const char *path = "../build/tree/latest.root")
 {
   TFile *file = TFile::Open(path);
   auto tree = (TTree *)file->Get("tree");

@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void Template(const char *path)
+void Template(const char *path = "../build/tree/latest.root")
 {
   TFile *file = TFile::Open(path);
   auto tree = (TTree *)file->Get("tree");
