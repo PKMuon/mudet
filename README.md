@@ -37,4 +37,6 @@ cd mudet/build
 
 Analyze data from the previous step:
 
-TBD
+* Analysis template: [analysis/Template.C](analysis/Template.C)
+* Draw incoming energy distribution: [analysis/Energy.C](analysis/Energy.C)
+* Draw energy loss distribution: [analysis/EnergyLoss.C](analysis/EnergyLoss.C)
