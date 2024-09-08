@@ -52,6 +52,8 @@ void EnergyLoss(const char *path = "../build/tree/latest.root")
   canvas->SetRightMargin(0.03);
 
   Double_t maximum = max(Ionization->GetMaximum(), Radiation->GetMaximum());
+  maximum = max(maximum, Edep->GetMaximum());
+  maximum = max(maximum, NonIonEdep->GetMaximum());
   Ionization->SetMaximum(maximum * 1.1);
   Ionization->SetStats(0);
   Ionization->SetLineColor(2);
