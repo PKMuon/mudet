@@ -34,7 +34,7 @@ void EnergyLoss(const char *path = "../build/tree/latest.root")
       auto track = (Track *)Tracks->UncheckedAt(iTrack);
       if(track->Mother != 1) continue;  // Consider only primary ionization/radiation.
       switch(track->Pid) {
-        case 11: ionization += track->E; break;
+        case 11: ionization += track->E - 0.51099895; break;
         case 22: radiation += track->E; break;
         default: cerr << "WARNING: Unexpected PDG ID " << track->Pid << endl;
       }
