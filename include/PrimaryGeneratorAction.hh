@@ -38,6 +38,7 @@ public:
   ~PrimaryGeneratorAction() override;
 
   void GeneratePrimaries(G4Event *) override;
+  void SetTotalEnergy(G4double);
 
 private:
   G4ParticleGun *fParticleGun;

@@ -54,3 +54,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *event)
 {
   fParticleGun->GeneratePrimaryVertex(event);
 }
+
+void PrimaryGeneratorAction::SetTotalEnergy(G4double energy)
+{
+  energy -= fParticleGun->GetParticleDefinition()->GetPDGMass();
+  if(energy < 0) throw std::invalid_argument("energy less than mass");
+  fParticleGun->SetParticleEnergy(energy);
+}

@@ -24,33 +24,21 @@
 // ********************************************************************
 //
 
-#include "ActionInitialization.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "SteppingAction.hh"
-#include "TrackingAction.hh"
-#include "RunMessenger.hh"
-#include "G4AutoDelete.hh"
+#ifndef RunMessenger_h
+#define RunMessenger_h 1
 
-void ActionInitialization::BuildForMaster() const
-{
+#include "G4UImessenger.hh"
 
-}
+class RunMessenger : public G4UImessenger {
+public:
+  RunMessenger();
+  ~RunMessenger() override;
 
-void ActionInitialization::Build() const
-{
-  SetUserAction(new PrimaryGeneratorAction);
+  void SetNewValue(G4UIcommand *, G4String) override;
 
-  auto runAction = new RunAction;
-  SetUserAction(runAction);
+private:
+  class Driver;
+  class Driver *fDriver;
+};
 
-  auto eventAction = new EventAction(runAction);
-  SetUserAction(eventAction);
-
-  SetUserAction(new SteppingAction(eventAction));
-  SetUserAction(new TrackingAction(eventAction));
-
-  auto runMessenger = new RunMessenger;
-  G4AutoDelete::Register(runMessenger);
-}
+#endif

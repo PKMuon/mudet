@@ -24,33 +24,58 @@
 // ********************************************************************
 //
 
-#include "ActionInitialization.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "SteppingAction.hh"
-#include "TrackingAction.hh"
 #include "RunMessenger.hh"
-#include "G4AutoDelete.hh"
+#include "PrimaryGeneratorAction.hh"
 
-void ActionInitialization::BuildForMaster() const
+#include "G4RunManager.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
+
+class RunMessenger::Driver {
+public:
+  Driver(RunMessenger *messenger);
+  ~Driver();
+  void SetNewValue(G4UIcommand *, G4String);
+
+private:
+  PrimaryGeneratorAction *fPrimaryGeneratorAction;
+  G4UIcmdWithADoubleAndUnit *fSetTotalEnergyCmd;
+};
+
+RunMessenger::RunMessenger()
 {
-
+  fDriver = new Driver(this);
 }
 
-void ActionInitialization::Build() const
+RunMessenger::~RunMessenger()
 {
-  SetUserAction(new PrimaryGeneratorAction);
+  delete fDriver;
+}
 
-  auto runAction = new RunAction;
-  SetUserAction(runAction);
+void RunMessenger::SetNewValue(G4UIcommand *cmd, G4String val)
+{
+  fDriver->SetNewValue(cmd, val);
+}
 
-  auto eventAction = new EventAction(runAction);
-  SetUserAction(eventAction);
+RunMessenger::Driver::Driver(RunMessenger *messenger)
+{
+  fPrimaryGeneratorAction = (PrimaryGeneratorAction *)
+    G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
-  SetUserAction(new SteppingAction(eventAction));
-  SetUserAction(new TrackingAction(eventAction));
+  fSetTotalEnergyCmd = new G4UIcmdWithADoubleAndUnit("/gun/totalEnergy", messenger);
+  fSetTotalEnergyCmd->SetGuidance("Set total energy.");
+  fSetTotalEnergyCmd->SetParameterName("TotalEnergy", false);
+  fSetTotalEnergyCmd->SetUnitCategory("Energy");
+  fSetTotalEnergyCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+}
 
-  auto runMessenger = new RunMessenger;
-  G4AutoDelete::Register(runMessenger);
+RunMessenger::Driver::~Driver()
+{
+  delete fSetTotalEnergyCmd;
+}
+
+void RunMessenger::Driver::SetNewValue(G4UIcommand *cmd, G4String val)
+{
+  if(cmd == fSetTotalEnergyCmd) {
+    fPrimaryGeneratorAction->SetTotalEnergy(fSetTotalEnergyCmd->GetNewDoubleValue(val));
+  }
 }
