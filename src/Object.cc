@@ -27,6 +27,13 @@
 #include "Object.hh"
 
 #include "G4Track.hh"
+#include "G4LogicalVolume.hh"
+#include "G4MaterialCutsCouple.hh"
+#include "G4ProductionCuts.hh"
+#include "G4RToEConvForGamma.hh"
+#include "G4RToEConvForElectron.hh"
+#include "G4RToEConvForPositron.hh"
+#include "G4RToEConvForProton.hh"
 
 Track &Track::operator=(const G4Track &track)
 {
@@ -44,6 +51,24 @@ Track &Track::operator=(const G4Track &track)
   Y = position.getY();
   Z = position.getZ();
   T = track.GetGlobalTime();
+
+  return *this;
+}
+
+Cuts &Cuts::operator=(const G4LogicalVolume &volume)
+{
+  G4Material *material = volume.GetMaterial();
+  G4ProductionCuts *cuts = volume.GetMaterialCutsCouple()->GetProductionCuts();
+
+  GammaCut = cuts->GetProductionCut("gamma");
+  ElectronCut = cuts->GetProductionCut("e-");
+  PositronCut = cuts->GetProductionCut("e+");
+  ProtonCut = cuts->GetProductionCut("proton");
+
+  GammaThreshold = G4RToEConvForGamma().Convert(GammaCut, material);
+  ElectronThreshold = G4RToEConvForElectron().Convert(ElectronCut, material);
+  PositronThreshold = G4RToEConvForPositron().Convert(PositronCut, material);
+  ProtonThreshold = G4RToEConvForProton().Convert(ProtonCut, material);
 
   return *this;
 }

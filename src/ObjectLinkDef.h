@@ -31,5 +31,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class Track+;
+#pragma link C++ class Cuts+;
 
 #endif

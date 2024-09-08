@@ -31,6 +31,7 @@
 #include "G4Threading.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
+#include "G4LogicalVolumeStore.hh"
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -55,17 +56,21 @@ G4String Run::fTreeTitle = "tree";
 class Run::Manager {
 public:
   Manager();
+  ~Manager();
 
   void Branch(TTree *tree);
   void PreFill();
   void Reset();
   void AddTrack(const G4Track *track);
   void AddStep(const G4Step *track);
+  void SaveCuts();
 
 private:
+  TFile *fFile;
+  TTree *fCuts;
   TClonesArray Tracks;
-  Double_t EnergyDeposit;
-  Double_t NonIonizingEnergyDeposit;
+  TClonesArray Cuts;
+  Double_t EnergyDeposit, NonIonizingEnergyDeposit;
 };
 
 Run::Run()
@@ -74,27 +79,28 @@ Run::Run()
   auto parent = fs::path(filename.c_str()).parent_path();
   if(!parent.empty()) fs::create_directories(parent);
 
-  fManager = new Manager;
   fFile = TFile::Open(filename, "RECREATE");
   if(!fFile->IsOpen()) {
     G4cerr << "Error opening file " << filename << G4endl;
     exit(1);
   }
   fTree = new TTree(fTreeName, fTreeTitle);
+  fManager = new Manager;
   fManager->Branch(fTree);
 }
 
 Run::~Run()
 {
+  delete fManager;
   fFile->cd();
   fTree->Write(NULL, fTree->kOverwrite);
   fFile->Close();
-  delete fManager;
 }
 
 void Run::AutoSave()
 {
   fTree->AutoSave("SaveSelf, Overwrite");
+  fManager->SaveCuts();
 }
 
 void Run::FillAndReset()
@@ -114,9 +120,17 @@ void Run::AddStep(const G4Step *step)
   fManager->AddStep(step);
 }
 
-Run::Manager::Manager() : Tracks("Track"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
+Run::Manager::Manager() : Tracks("Track"), Cuts("Cuts"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
 {
+  fFile = NULL;
+  fCuts = NULL;
+}
 
+Run::Manager::~Manager()
+{
+  if(fFile == NULL) return;
+  fFile->cd();
+  fCuts->Write(NULL, fCuts->kOverwrite);
 }
 
 void Run::Manager::Branch(TTree *tree)
@@ -124,6 +138,11 @@ void Run::Manager::Branch(TTree *tree)
   tree->Branch("Tracks", &Tracks);
   tree->Branch("EnergyDeposit", &EnergyDeposit);
   tree->Branch("NonIonizingEnergyDeposit", &NonIonizingEnergyDeposit);
+
+  fFile = tree->GetCurrentFile();
+  fFile->cd();
+  fCuts = new TTree("cuts", "cuts");
+  fCuts->Branch("Cuts", &Cuts);
 }
 
 void Run::Manager::PreFill()
@@ -164,4 +183,11 @@ void Run::Manager::AddStep(const G4Step *step)
 {
   EnergyDeposit += step->GetTotalEnergyDeposit();
   NonIonizingEnergyDeposit += step->GetNonIonizingEnergyDeposit();
+}
+
+void Run::Manager::SaveCuts()
+{
+  *(::Cuts *)Cuts.ConstructedAt(0) = *G4LogicalVolumeStore::GetInstance()->GetVolume("world");
+  fCuts->Fill();
+  fCuts->AutoSave("SaveSelf, Overwrite");
 }

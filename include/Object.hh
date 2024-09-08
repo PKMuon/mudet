@@ -30,6 +30,7 @@
 #include <TObject.h>
 
 class G4Track;
+class G4LogicalVolume;
 
 class Track : public TObject {
 public:
@@ -48,6 +49,22 @@ public:
   Double_t T;
 
   ClassDef(Track, 1);
+};
+
+class Cuts : public TObject {
+public:
+  Cuts &operator=(const G4LogicalVolume &);
+
+  Double_t GammaCut;
+  Double_t GammaThreshold;
+  Double_t ElectronCut;
+  Double_t ElectronThreshold;
+  Double_t PositronCut;
+  Double_t PositronThreshold;
+  Double_t ProtonCut;
+  Double_t ProtonThreshold;
+
+  ClassDef(Cuts, 1);
 };
 
 #endif

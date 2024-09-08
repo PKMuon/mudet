@@ -51,5 +51,6 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
   auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_WATER"), "world");
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
+
   return world_p;
 }
