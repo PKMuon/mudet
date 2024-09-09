@@ -9,10 +9,12 @@
 #include <iostream>
 #include <iomanip>
 #include <unordered_map>
+#include <filesystem>
 
 using namespace std;
+namespace fs = std::filesystem;
 
-void Energy(const char *path = "../build/tree/latest.root")
+void Energy(const char *path = "../build/tree/latest.root", const char *outpath = NULL)
 {
   TFile *file = TFile::Open(path);
   auto tree = (TTree *)file->Get("tree");
@@ -32,7 +34,7 @@ void Energy(const char *path = "../build/tree/latest.root")
   Energy->SetYTitle("Events");
   Energy->Draw();
 
-  canvas->SaveAs("Energy.pdf");
+  canvas->SaveAs(outpath ? : fs::path(path).filename().replace_extension("pdf").c_str());
   delete canvas;
 
   unordered_map<Double_t, Long64_t> Ecount;

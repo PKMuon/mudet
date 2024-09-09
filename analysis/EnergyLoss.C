@@ -7,10 +7,12 @@
 #include <TLegend.h>
 #include <TStyle.h>
 #include <iostream>
+#include <filesystem>
 
 using namespace std;
+namespace fs = std::filesystem;
 
-void EnergyLoss(const char *path = "../build/tree/latest.root")
+void EnergyLoss(const char *path = "../build/tree/latest.root", const char *outpath = NULL)
 {
   TFile *file = TFile::Open(path);
   auto tree = (TTree *)file->Get("tree");
@@ -69,7 +71,7 @@ void EnergyLoss(const char *path = "../build/tree/latest.root")
 
   TLegend *legend = canvas->BuildLegend(0.75, 0.78, 0.95, 0.93);
   legend->Draw();
-  canvas->SaveAs("EnergyLoss.pdf");
+  canvas->SaveAs(outpath ? : fs::path(path).filename().replace_extension("pdf").c_str());
 
   delete canvas;
   delete Ionization;
