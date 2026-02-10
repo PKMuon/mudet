@@ -26,11 +26,6 @@
 
 #include "MuDiracEmCaptureCascade.hh"
 
-#include "G4NucleiProperties.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
-#include "Randomize.hh"
-
 MuDiracEmCaptureCascade::MuDiracEmCaptureCascade()
 {
   // [TODO]
@@ -42,58 +37,5 @@ G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &p
 {
   // [TODO]
 
-  result.Clear();
-  result.SetStatusChange(isAlive);
-  fTime = projectile.GetGlobalTime();
-
-  G4int Z = targetNucleus.GetZ_asInt();
-  G4int A = targetNucleus.GetA_asInt();
-  G4double massA = G4NucleiProperties::GetNuclearMass(A, Z);
-  G4double mass = fMuMass * massA / (fMuMass + massA);
-  G4double e = 13.6 * eV * (Z * Z) * mass / electron_mass_c2;
-
-  // precise corrections of energy only for K-shell
-  fLevelEnergy[0] = fKLevelEnergy[std::min(Z, 92)];
-  for(G4int i = 1; i < 14; ++i) { fLevelEnergy[i] = e / (G4double)((i + 1) * (i + 1)); }
-
-  G4int nElec = Z;
-  G4int nAuger = 1;
-  G4int nLevel = 13;
-  G4double pGamma = (Z * Z * Z * Z);
-
-  // Capture on 14-th level
-  G4double edep = fLevelEnergy[13];
-  AddNewParticle(theElectron, edep);
-  G4double deltaE;
-
-  // Emit new photon or electron
-  // Simplified model for probabilities
-  // N.C.Mukhopadhyay Phy. Rep. 30 (1977) 1.
-  do {
-    // case of Auger electrons
-    if((nAuger < nElec) && ((pGamma + 10000.0) * G4UniformRand() < 10000.0)) {
-      ++nAuger;
-      deltaE = fLevelEnergy[nLevel - 1] - fLevelEnergy[nLevel];
-      --nLevel;
-      AddNewParticle(theElectron, deltaE);
-
-    } else {
-      // Case of photon cascade, probabilities from
-      // C.S.Wu and L.Wilets, Ann. Rev. Nuclear Sci. 19 (1969) 527.
-
-      G4double var = (10.0 + G4double(nLevel - 1)) * G4UniformRand();
-      G4int iLevel = nLevel - 1;
-      if(var > 10.0) iLevel -= G4int(var - 10.0) + 1;
-      if(iLevel < 0) iLevel = 0;
-      deltaE = fLevelEnergy[iLevel] - fLevelEnergy[nLevel];
-      nLevel = iLevel;
-      AddNewParticle(theGamma, deltaE);
-    }
-    edep += deltaE;
-
-    // Loop checking, 06-Aug-2015, Vladimir Ivanchenko
-  } while(nLevel > 0);
-
-  result.SetLocalEnergyDeposit(edep);
-  return &result;
+  return G4EmCaptureCascade_11_3_2::ApplyYourself(projectile, targetNucleus);
 }
