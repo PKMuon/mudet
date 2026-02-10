@@ -23,73 +23,26 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-//-----------------------------------------------------------------------------
-//
-// GEANT4 Class file
-//
-// File name:  MuDiracEmCaptureCascade
-//
-// Author:        V.Ivanchenko (Vladimir.Ivantchenko@cern.ch)
-//
-// Creation date: 22 April 2012 on base of G4MuMinusCaptureCascade
-//
-//
-//-----------------------------------------------------------------------------
-//
-// Modifications:
-//
-//-----------------------------------------------------------------------------
 
 #include "MuDiracEmCaptureCascade.hh"
 
-#include "G4Electron.hh"
-#include "G4Gamma.hh"
-#include "G4MuonMinus.hh"
 #include "G4NucleiProperties.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
-MuDiracEmCaptureCascade::MuDiracEmCaptureCascade() : G4HadronicInteraction("emCaptureCascade")
+MuDiracEmCaptureCascade::MuDiracEmCaptureCascade()
 {
-  theElectron = G4Electron::Electron();
-  theGamma = G4Gamma::Gamma();
-  fMuMass = G4MuonMinus::MuonMinus()->GetPDGMass();
-  fTime = 0.0;
-
-  // Calculate the Energy of K Mesoatom Level for this Element using
-  // the Energy of Hydrogen Atom taken into account finite size of the
-  // nucleus
-  static const G4int nlevels = 28;
-  static const G4int listK[nlevels] = { 1, 2, 4, 6, 8, 11, 14, 17, 18, 21, 24, 26, 29, 32, 38, 40, 41, 44, 49, 53, 55,
-    60, 65, 70, 75, 81, 85, 92 };
-  static const G4double listKEnergy[nlevels] = { 0.00275, 0.011, 0.043, 0.098, 0.173, 0.326, 0.524, 0.765, 0.853, 1.146,
-    1.472, 1.708, 2.081, 2.475, 3.323, 3.627, 3.779, 4.237, 5.016, 5.647, 5.966, 6.793, 7.602, 8.421, 9.249, 10.222,
-    10.923, 11.984 };
-
-  fKLevelEnergy[0] = 0.0;
-  fKLevelEnergy[1] = listKEnergy[0];
-  G4int idx = 1;
-  for(G4int i = 1; i < nlevels; ++i) {
-    G4int z1 = listK[idx];
-    G4int z2 = listK[i];
-    if(z1 + 1 < z2) {
-      G4double dz = G4double(z2 - z1);
-      G4double y1 = listKEnergy[idx] / G4double(z1 * z1);
-      G4double y2 = listKEnergy[i] / G4double(z2 * z2);
-      for(G4int z = z1 + 1; z < z2; ++z) { fKLevelEnergy[z] = (y1 + (y2 - y1) * (z - z1) / dz) * z * z; }
-    }
-    fKLevelEnergy[z2] = listKEnergy[i];
-    idx = i;
-  }
-  for(G4int i = 0; i < 14; ++i) { fLevelEnergy[i] = 0.0; }
+  // [TODO]
 }
 
 MuDiracEmCaptureCascade::~MuDiracEmCaptureCascade() { }
 
 G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &projectile, G4Nucleus &targetNucleus)
 {
+  // [TODO]
+  G4cout << "Hello from " << __PRETTY_FUNCTION__ << G4endl;
+
   result.Clear();
   result.SetStatusChange(isAlive);
   fTime = projectile.GetGlobalTime();
@@ -144,12 +97,4 @@ G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &p
 
   result.SetLocalEnergyDeposit(edep);
   return &result;
-}
-
-void MuDiracEmCaptureCascade::ModelDescription(std::ostream &outFile) const
-{
-  outFile << "Simulation of electromagnetic cascade from capture level"
-          << " to K-shell of the mesonic atom\n."
-          << "Probabilities of gamma and Auger transitions from\n"
-          << "  N.C.Mukhopadhyay Phys. Rep. 30 (1977) 1.\n";
 }

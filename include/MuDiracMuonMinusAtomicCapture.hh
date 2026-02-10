@@ -23,85 +23,17 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-//---------------------------------------------------------------------
-//
-// GEANT4 Class header file
-//
-// File name:     MuDiracMuonMinusAtomicCapture
-//
-// 20160701 K.L. Genser - New process using G4MuonicAtom
-//
-// Class Description:
-//
-// Stopping of mu-
-//
-// Modifications:
-//   20160912 K.L. Genser made it rest process
-//
-//------------------------------------------------------------------------
 
 #ifndef MuDiracMuonMinusAtomicCapture_h
 #define MuDiracMuonMinusAtomicCapture_h 1
 
-#include "G4ElementSelector.hh"
-#include "G4ForceCondition.hh"
-#include "G4HadFinalState.hh"
-#include "G4HadronicInteraction.hh"
-#include "G4HadronicProcessType.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4Step.hh"
-#include "G4Track.hh"
-#include "G4VRestProcess.hh"
-#include "globals.hh"
+#include "G4MuonMinusAtomicCapture_11_3_2.hh"
 
-class G4HadronicInteraction;
-
-class MuDiracMuonMinusAtomicCapture : public G4VRestProcess
-
-{
+class MuDiracMuonMinusAtomicCapture : public G4MuonMinusAtomicCapture_11_3_2 {
 public:
   explicit MuDiracMuonMinusAtomicCapture(const G4String &name = "MuDiracMuonMinusAtomicCapture");
 
-  ~MuDiracMuonMinusAtomicCapture();
-
-  G4bool IsApplicable(const G4ParticleDefinition &);
-
-  virtual void PreparePhysicsTable(const G4ParticleDefinition &);
-
-  virtual void BuildPhysicsTable(const G4ParticleDefinition &);
-
-  virtual G4double AtRestGetPhysicalInteractionLength(const G4Track &track, G4ForceCondition *condition);
-
   virtual G4VParticleChange *AtRestDoIt(const G4Track &, const G4Step &);
-
-  void ProcessDescription(std::ostream &outFile) const;
-
-  inline void SetElementSelector(G4ElementSelector *ptr);
-
-  inline void SetEmCascade(G4HadronicInteraction *ptr);
-
-protected:
-  // set effective lifetime for at-rest process (default is forced action)
-  // FIXME: This should be computed by subprocesses via cross-section analogue
-  G4double GetMeanLifeTime(const G4Track & /*aTrack*/, G4ForceCondition * /*condition*/) { return -1.0; }
-
-private:
-  // hide assignment operator as private
-  MuDiracMuonMinusAtomicCapture &operator=(const MuDiracMuonMinusAtomicCapture &right);
-  MuDiracMuonMinusAtomicCapture(const MuDiracMuonMinusAtomicCapture &);
-
-  G4ElementSelector *fElementSelector;
-
-  G4HadronicInteraction *fEmCascade;
-
-  G4ParticleChange *theTotalResult;
-
-  G4HadFinalState *result;
-
-  G4HadProjectile thePro;
-
-  G4Nucleus targetNucleus;
 };
 
 #endif

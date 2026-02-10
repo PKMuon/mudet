@@ -23,82 +23,26 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-//---------------------------------------------------------------------
-//
-// GEANT4 Class
-//
-// GEANT4 Class header file
-//
-// File name:     MuDiracMuonMinusAtomicCapture
-//
-// 20160912 K.L. Genser - New process using G4MuonicAtom somewhat
-//                        based on G4HadronStoppingProcess
-//
-// Class Description:
-//
-// Stopping of mu-
-//
-// G4VParticleChange will contain gammas from MuDiracEmCaptureCascade and
-// resulting G4MuonicAtom
-//
-//
-//------------------------------------------------------------------------
 
 #include "MuDiracMuonMinusAtomicCapture.hh"
 
-#include "G4HadProjectile.hh"
-#include "G4HadSecondary.hh"
-#include "G4HadronicInteraction.hh"
-#include "G4HadronicProcessStore.hh"
-#include "G4HadronicProcessType.hh"
-#include "G4IonTable.hh"
-#include "G4MuonMinus.hh"
-#include "G4MuonMinusBoundDecay.hh"
+#include "G4HadronicInteractionRegistry.hh"
 #include "G4ParticleDefinition.hh"
+#include "G4PreCompoundModel.hh"
 #include "G4RandomDirection.hh"
+#include "G4VPreCompoundModel.hh"
 #include "MuDiracEmCaptureCascade.hh"
 
 MuDiracMuonMinusAtomicCapture::MuDiracMuonMinusAtomicCapture(const G4String &name)
-    : G4VRestProcess(name, fHadronic),
-      fElementSelector(new G4ElementSelector()),
-      fEmCascade(new MuDiracEmCaptureCascade()),  // Owned by InteractionRegistry
-      theTotalResult(new G4ParticleChange()),
-      result(nullptr)
+    : G4MuonMinusAtomicCapture_11_3_2(name)
 {
-  SetProcessSubType(fMuAtomicCapture);
-  G4HadronicProcessStore::Instance()->RegisterExtraProcess(this);
-}
-
-MuDiracMuonMinusAtomicCapture::~MuDiracMuonMinusAtomicCapture()
-{
-  G4HadronicProcessStore::Instance()->DeRegisterExtraProcess(this);
-  delete theTotalResult;
-}
-
-G4bool MuDiracMuonMinusAtomicCapture::IsApplicable(const G4ParticleDefinition &p)
-{
-  return (&p == G4MuonMinus::MuonMinus());
-}
-
-void MuDiracMuonMinusAtomicCapture::PreparePhysicsTable(const G4ParticleDefinition &p)
-{
-  G4HadronicProcessStore::Instance()->RegisterParticleForExtraProcess(this, &p);
-}
-
-void MuDiracMuonMinusAtomicCapture::BuildPhysicsTable(const G4ParticleDefinition &p)
-{
-  G4HadronicProcessStore::Instance()->PrintInfo(&p);
-}
-
-G4double MuDiracMuonMinusAtomicCapture::AtRestGetPhysicalInteractionLength(const G4Track &, G4ForceCondition *condition)
-{
-  *condition = NotForced;
-  return 0.0;
+  delete fEmCascade;
+  fEmCascade = new MuDiracEmCaptureCascade();
 }
 
 G4VParticleChange *MuDiracMuonMinusAtomicCapture::AtRestDoIt(const G4Track &track, const G4Step &)
 {
+  // [TODO]
   G4cout << "Hello from " << __PRETTY_FUNCTION__ << G4endl;
 
   // if primary is not Alive then do nothing (how?)
@@ -178,10 +122,4 @@ G4VParticleChange *MuDiracMuonMinusAtomicCapture::AtRestDoIt(const G4Track &trac
   //   CheckEnergyMomentumConservation(track, *nucleus);
   // }
   return theTotalResult;
-}
-
-void MuDiracMuonMinusAtomicCapture::ProcessDescription(std::ostream &outFile) const
-{
-  outFile << "Stopping of mu- using default element selector, EM cascade"
-          << "G4MuonicAtom is created\n";
 }

@@ -23,78 +23,22 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-//-----------------------------------------------------------------------------
-//
-// GEANT4 Class header file
-//
-// File name:  MuDiracEmCaptureCascade
-//
-// Author:        V.Ivanchenko (Vladimir.Ivantchenko@cern.ch)
-//
-// Creation date: 22 April 2012 on base of G4MuMinusCaptureCascade
-//
-// Class Description:
-//
-// Simulation of electromagnetic cascade from capture level to K-shell
-// of the mesonic atom
-//
-// Probabilities of gamma and Auger transitions from
-// N.C.Mukhopadhyay Phys. Rep. 30 (1977) 1.
-//
-//-----------------------------------------------------------------------------
-//
-// Modifications:
-//
-//-----------------------------------------------------------------------------
 
 #ifndef MuDiracEmCaptureCascade_h
 #define MuDiracEmCaptureCascade_h 1
 
-#include "G4DynamicParticle.hh"
-#include "G4HadFinalState.hh"
-#include "G4HadProjectile.hh"
-#include "G4HadSecondary.hh"
-#include "G4HadronicInteraction.hh"
-#include "G4Nucleus.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4RandomDirection.hh"
-#include "G4ThreeVector.hh"
-#include "G4Track.hh"
-#include "globals.hh"
+#include "G4EmCaptureCascade_11_3_2.hh"
 
-class MuDiracEmCaptureCascade : public G4HadronicInteraction {
+class MuDiracEmCaptureCascade : public G4EmCaptureCascade_11_3_2 {
 public:
   explicit MuDiracEmCaptureCascade();
 
   virtual ~MuDiracEmCaptureCascade();
 
-  virtual G4HadFinalState *ApplyYourself(const G4HadProjectile &aTrack, G4Nucleus &targetNucleus);
-
-  virtual void ModelDescription(std::ostream &outFile) const;
+  virtual G4HadFinalState *ApplyYourself(const G4HadProjectile &aTrack, G4Nucleus &targetNucleus) override;
 
 private:
-  inline void AddNewParticle(G4ParticleDefinition *aParticle, G4double kinEnergy);
-
-  // hide assignment operator as private
-  MuDiracEmCaptureCascade &operator=(const MuDiracEmCaptureCascade &right) = delete;
-  MuDiracEmCaptureCascade(const MuDiracEmCaptureCascade &) = delete;
-
-  G4HadFinalState result;
-  G4ParticleDefinition *theElectron;
-  G4ParticleDefinition *theGamma;
-  G4double fMuMass;
-  G4double fTime;
-  G4double fLevelEnergy[14];
-  G4double fKLevelEnergy[93];
+  // [TODO]
 };
-
-inline void MuDiracEmCaptureCascade::AddNewParticle(G4ParticleDefinition *aParticle, G4double kinEnergy)
-{
-  G4DynamicParticle *dp = new G4DynamicParticle(aParticle, G4RandomDirection(), kinEnergy);
-  G4HadSecondary hs(dp);
-  hs.SetTime(fTime);
-  result.AddSecondary(hs);
-}
 
 #endif
