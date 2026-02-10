@@ -27,8 +27,9 @@
 #ifndef Run_h
 #define Run_h 1
 
-#include "globals.hh"
 #include <Rtypes.h>
+
+#include "globals.hh"
 
 class TFile;
 class TTree;

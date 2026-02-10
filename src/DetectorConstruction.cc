@@ -27,29 +27,35 @@
 #include "DetectorConstruction.hh"
 
 #include "G4Box.hh"
+#include "G4Element.hh"
+#include "G4Isotope.hh"
 #include "G4LogicalVolume.hh"
+#include "G4Material.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4NistManager.hh"
 
 DetectorConstruction::DetectorConstruction()
 {
   fWorldX = 10 * cm;
   fWorldY = 10 * cm;
   fWorldZ = 10 * cm;
-  fSourcePosition = {0, 0, -fWorldZ * 0.5};
+  fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
 
-DetectorConstruction::~DetectorConstruction()
-{
-
-}
+DetectorConstruction::~DetectorConstruction() { }
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
-  auto nist = G4NistManager::Instance();
+  // https://pubchem.ncbi.nlm.nih.gov/compound/167312#section=Computed-Properties
+  // https://pubchem.ncbi.nlm.nih.gov/element/90#section=Density
+  auto Th_229_isotope = new G4Isotope("Th-229", 90, 229, 229.03176 * g / mole);
+  auto Th_229_element = new G4Element("Th-229", "Th-229", 1);
+  Th_229_element->AddIsotope(Th_229_isotope, 100. * perCent);
+  auto Th_229_material = new G4Material("Th-229", 11.72 * (229.03176 / 232.0377) * g / cm3, 1);
+  Th_229_material->AddElement(Th_229_element, 1);
+
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
-  auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_WATER"), "world");
+  auto world_l = new G4LogicalVolume(world_s, Th_229_material, "world");
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
 
   return world_p;

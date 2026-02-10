@@ -24,43 +24,39 @@
 // ********************************************************************
 //
 
-#include "RunMessenger.hh"
+#include "MuDiracMuonMinusAtomicCaptureConstructor.hh"
 
-#include "G4RunManager.hh"
-#include "G4UIcmdWithADoubleAndUnit.hh"
-#include "PrimaryGeneratorAction.hh"
+#include "G4GenericMuonicAtom.hh"
+#include "G4MuonMinus.hh"
+#include "G4ProcessManager.hh"
+#include "MuDiracMuonMinusAtomicCapture.hh"
 
-class RunMessenger::Driver {
-public:
-  Driver(RunMessenger *messenger);
-  ~Driver();
-  void SetNewValue(G4UIcommand *, G4String);
-
-private:
-  PrimaryGeneratorAction *fPrimaryGeneratorAction;
-  G4UIcmdWithADoubleAndUnit *fSetTotalEnergyCmd;
-};
-
-RunMessenger::RunMessenger() { fDriver = new Driver(this); }
-
-RunMessenger::~RunMessenger() { delete fDriver; }
-
-void RunMessenger::SetNewValue(G4UIcommand *cmd, G4String val) { fDriver->SetNewValue(cmd, val); }
-
-RunMessenger::Driver::Driver(RunMessenger *messenger)
+MuDiracMuonMinusAtomicCaptureConstructor::MuDiracMuonMinusAtomicCaptureConstructor(const G4String &name)
+    : G4VPhysicsConstructor(name)
 {
-  fPrimaryGeneratorAction = (PrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
-
-  fSetTotalEnergyCmd = new G4UIcmdWithADoubleAndUnit("/gun/totalEnergy", messenger);
-  fSetTotalEnergyCmd->SetGuidance("Set total energy.");
-  fSetTotalEnergyCmd->SetParameterName("TotalEnergy", false);
-  fSetTotalEnergyCmd->SetUnitCategory("Energy");
-  fSetTotalEnergyCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
-RunMessenger::Driver::~Driver() { delete fSetTotalEnergyCmd; }
-
-void RunMessenger::Driver::SetNewValue(G4UIcommand *cmd, G4String val)
+void MuDiracMuonMinusAtomicCaptureConstructor::ConstructParticle()
 {
-  if(cmd == fSetTotalEnergyCmd) { fPrimaryGeneratorAction->SetTotalEnergy(fSetTotalEnergyCmd->GetNewDoubleValue(val)); }
+  G4MuonMinus::Definition();
+  G4GenericMuonicAtom::GenericMuonicAtomDefinition();
+}
+
+void MuDiracMuonMinusAtomicCaptureConstructor::ConstructProcess()
+{
+  // Get muon particle definition
+  G4ParticleDefinition *muon = G4MuonMinus::Definition();
+  G4ProcessManager *pManager = muon->GetProcessManager();
+
+  if(!pManager) {
+    G4Exception("MuDiracMuonMinusAtomicCaptureConstructor::ConstructProcess", "NoProcessManager", FatalException,
+        "MuonMinus has no process manager!");
+    return;
+  }
+
+  // Create the atomic capture process
+  auto *muCapture = new MuDiracMuonMinusAtomicCapture("MuDiracMuonMinusAtomicCapture");
+
+  // Attach as a rest process (triggers when muon stops)
+  pManager->AddRestProcess(muCapture);
 }

@@ -25,25 +25,14 @@
 //
 
 #include "TrackingAction.hh"
+
 #include "EventAction.hh"
 #include "Run.hh"
 
-TrackingAction::TrackingAction(EventAction *eventAction) : fEventAction(eventAction)
-{
-  fRun = fEventAction->GetRun();
-}
+TrackingAction::TrackingAction(EventAction *eventAction) : fEventAction(eventAction) { fRun = fEventAction->GetRun(); }
 
-TrackingAction::~TrackingAction()
-{
+TrackingAction::~TrackingAction() { }
 
-}
+void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track) { fRun->AddTrack(track); }
 
-void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track)
-{
-  fRun->AddTrack(track);
-}
-
-void TrackingAction::PostUserTrackingAction([[maybe_unused]] const G4Track *track)
-{
-
-}
+void TrackingAction::PostUserTrackingAction([[maybe_unused]] const G4Track *track) { }

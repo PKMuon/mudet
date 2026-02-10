@@ -25,24 +25,13 @@
 //
 
 #include "RunAction.hh"
+
 #include "Run.hh"
 
-RunAction::RunAction()
-{
-  fRun = new Run;
-}
+RunAction::RunAction() { fRun = new Run; }
 
-RunAction::~RunAction()
-{
-  delete fRun;
-}
+RunAction::~RunAction() { delete fRun; }
 
-void RunAction::BeginOfRunAction([[maybe_unused]] const G4Run *run)
-{
+void RunAction::BeginOfRunAction([[maybe_unused]] const G4Run *run) { }
 
-}
-
-void RunAction::EndOfRunAction([[maybe_unused]] const G4Run *run)
-{
-  fRun->AutoSave();
-}
+void RunAction::EndOfRunAction([[maybe_unused]] const G4Run *run) { fRun->AutoSave(); }

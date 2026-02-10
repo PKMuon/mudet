@@ -24,43 +24,19 @@
 // ********************************************************************
 //
 
-#include "RunMessenger.hh"
+#ifndef MuDiracMuonMinusAtomicCaptureConstructor_h
+#define MuDiracMuonMinusAtomicCaptureConstructor_h 1
 
-#include "G4RunManager.hh"
-#include "G4UIcmdWithADoubleAndUnit.hh"
-#include "PrimaryGeneratorAction.hh"
+#include "G4VPhysicsConstructor.hh"
 
-class RunMessenger::Driver {
+class MuDiracMuonMinusAtomicCaptureConstructor : public G4VPhysicsConstructor {
 public:
-  Driver(RunMessenger *messenger);
-  ~Driver();
-  void SetNewValue(G4UIcommand *, G4String);
+  MuDiracMuonMinusAtomicCaptureConstructor(const G4String &name = "MuDiracMuonMinusAtomicCaptureConstructor");
+  virtual ~MuDiracMuonMinusAtomicCaptureConstructor() = default;
 
-private:
-  PrimaryGeneratorAction *fPrimaryGeneratorAction;
-  G4UIcmdWithADoubleAndUnit *fSetTotalEnergyCmd;
+protected:
+  virtual void ConstructParticle() override;
+  virtual void ConstructProcess() override;
 };
 
-RunMessenger::RunMessenger() { fDriver = new Driver(this); }
-
-RunMessenger::~RunMessenger() { delete fDriver; }
-
-void RunMessenger::SetNewValue(G4UIcommand *cmd, G4String val) { fDriver->SetNewValue(cmd, val); }
-
-RunMessenger::Driver::Driver(RunMessenger *messenger)
-{
-  fPrimaryGeneratorAction = (PrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
-
-  fSetTotalEnergyCmd = new G4UIcmdWithADoubleAndUnit("/gun/totalEnergy", messenger);
-  fSetTotalEnergyCmd->SetGuidance("Set total energy.");
-  fSetTotalEnergyCmd->SetParameterName("TotalEnergy", false);
-  fSetTotalEnergyCmd->SetUnitCategory("Energy");
-  fSetTotalEnergyCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
-}
-
-RunMessenger::Driver::~Driver() { delete fSetTotalEnergyCmd; }
-
-void RunMessenger::Driver::SetNewValue(G4UIcommand *cmd, G4String val)
-{
-  if(cmd == fSetTotalEnergyCmd) { fPrimaryGeneratorAction->SetTotalEnergy(fSetTotalEnergyCmd->GetNewDoubleValue(val)); }
-}
+#endif

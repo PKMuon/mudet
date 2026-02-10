@@ -1,13 +1,15 @@
-#include "../include/Object.hh"
-#include <TFile.h>
-#include <TTree.h>
-#include <TClonesArray.h>
-#include <TH1F.h>
 #include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TH1F.h>
 #include <TLegend.h>
 #include <TStyle.h>
-#include <iostream>
+#include <TTree.h>
+
 #include <filesystem>
+#include <iostream>
+
+#include "../include/Object.hh"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -36,9 +38,9 @@ void EnergyLoss(const char *path = "../build/tree/latest.root", const char *outp
       auto track = (Track *)Tracks->UncheckedAt(iTrack);
       if(track->Mother != 1) continue;  // Consider only primary ionization/radiation.
       switch(track->Pid) {
-        case 11: ionization += track->E - 0.51099895; break;
-        case 22: radiation += track->E; break;
-        default: cerr << "WARNING: Unexpected PDG ID " << track->Pid << endl;
+      case 11: ionization += track->E - 0.51099895; break;
+      case 22: radiation += track->E; break;
+      default: cerr << "WARNING: Unexpected PDG ID " << track->Pid << endl;
       }
     }
     Ionization->Fill(ionization);
@@ -71,7 +73,7 @@ void EnergyLoss(const char *path = "../build/tree/latest.root", const char *outp
 
   TLegend *legend = canvas->BuildLegend(0.75, 0.78, 0.95, 0.93);
   legend->Draw();
-  canvas->SaveAs(outpath ? : fs::path(path).filename().replace_extension("pdf").c_str());
+  canvas->SaveAs(outpath ?: fs::path(path).filename().replace_extension("pdf").c_str());
 
   delete canvas;
   delete Ionization;

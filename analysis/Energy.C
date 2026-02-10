@@ -1,15 +1,17 @@
-#include "../include/Object.hh"
-#include <TFile.h>
-#include <TTree.h>
-#include <TClonesArray.h>
-#include <TH1.h>
 #include <TCanvas.h>
-#include <TStyle.h>
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TH1.h>
 #include <TROOT.h>
-#include <iostream>
-#include <iomanip>
-#include <unordered_map>
+#include <TStyle.h>
+#include <TTree.h>
+
 #include <filesystem>
+#include <iomanip>
+#include <iostream>
+#include <unordered_map>
+
+#include "../include/Object.hh"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -34,15 +36,14 @@ void Energy(const char *path = "../build/tree/latest.root", const char *outpath 
   Energy->SetYTitle("Events");
   Energy->Draw();
 
-  canvas->SaveAs(outpath ? : fs::path(path).filename().replace_extension("pdf").c_str());
+  canvas->SaveAs(outpath ?: fs::path(path).filename().replace_extension("pdf").c_str());
   delete canvas;
 
   unordered_map<Double_t, Long64_t> Ecount;
   Double_t ESum = 0, E2Sum = 0;
   TClonesArray *Tracks = NULL;
   tree->SetBranchAddress("Tracks", &Tracks);
-  for(Long64_t i = 0; tree->GetEntry(i); ++i)
-  {
+  for(Long64_t i = 0; tree->GetEntry(i); ++i) {
     auto track = (Track *)Tracks->At(0);  // incoming beam
     ++Ecount[track->E];
     ESum += track->E;
@@ -51,12 +52,10 @@ void Energy(const char *path = "../build/tree/latest.root", const char *outpath 
   cout << scientific << setprecision(18);
   cout << "Mean energy: " << ESum / tree->GetEntries() << " MeV" << endl;
   cout << "Standard deviation: "
-       << sqrt(E2Sum / tree->GetEntries() - (ESum / tree->GetEntries()) * (ESum / tree->GetEntries()))
-       << " MeV" << endl;
+       << sqrt(E2Sum / tree->GetEntries() - (ESum / tree->GetEntries()) * (ESum / tree->GetEntries())) << " MeV"
+       << endl;
   cout << "Energy distribution:" << endl;
-  for(auto &p : Ecount) {
-     cout << "  " << p.first << " MeV\t" << p.second << " events" << endl;
-  }
+  for(auto &p : Ecount) { cout << "  " << p.first << " MeV\t" << p.second << " events" << endl; }
 
   file->Close();
 }

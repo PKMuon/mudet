@@ -8,7 +8,7 @@
 /run/verbose 2
 #
 /gun/particle mu-
-/gun/totalEnergy 1 GeV
+/gun/energy 100 MeV
 #/run/setCut 0.7 mm
 /run/printProgress 10000
 /run/beamOn 1000000
