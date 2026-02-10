@@ -38,6 +38,7 @@
 #include "G4Step.hh"
 #include "G4Threading.hh"
 #include "G4Track.hh"
+#include "G4VProcess.hh"
 #include "G4ios.hh"
 #include "Object.hh"
 
@@ -145,22 +146,27 @@ void Run::Manager::PreFill()
 {
   Int_t n = Tracks.GetEntries();
 
-  // Inplace index sort.
-  for(Int_t i = 0; i < n; ++i) {
-    auto track = (Track *)Tracks[i];
-    while(track->Id - 1 != i) {
-      if(track->Id <= 0 || track->Id > n) {
-        throw std::runtime_error("invalid track ID: " + std::to_string(track->Id));
-      }
-      if(((Track *)Tracks[track->Id - 1])->Id == track->Id) {
-        throw std::runtime_error("duplicate track ID: " + std::to_string(track->Id));
-      }
-      TObject *object = track;
-      std::swap(object, Tracks[track->Id - 1]);
-      track = (Track *)object;
-    }
-    Tracks[i] = track;
-  }
+  //// Inplace index sort.
+  //for(Int_t i = 0; i < n; ++i) {
+  //  auto track = (Track *)Tracks[i];
+  //  while(track->Id - 1 != i) {
+  //    if(track->Id <= 0 || track->Id > n) {
+  //      throw std::runtime_error("invalid track ID: " + std::to_string(track->Id));
+  //    }
+  //    if(((Track *)Tracks[track->Id - 1])->Id == track->Id) {
+  //      throw std::runtime_error("duplicate track ID: " + std::to_string(track->Id));
+  //    }
+  //    TObject *object = track;
+  //    std::swap(object, Tracks[track->Id - 1]);
+  //    track = (Track *)object;
+  //  }
+  //  Tracks[i] = track;
+  //}
+
+  std::vector<Track *> tracks;
+  for(Int_t i = 0; i < n; ++i) tracks.push_back((Track *)Tracks[i]);
+  sort(tracks.begin(), tracks.end(), [](Track *a, Track *b) { return a->Id < b->Id; });
+  for(Int_t i = 0; i < n; ++i) Tracks[i] = tracks[i];
 }
 
 void Run::Manager::Reset()
@@ -170,7 +176,15 @@ void Run::Manager::Reset()
   NonIonizingEnergyDeposit = 0;
 }
 
-void Run::Manager::AddTrack(const G4Track *track) { *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track; }
+void Run::Manager::AddTrack(const G4Track *track)
+{
+  const G4VProcess *creatorProcess = track->GetCreatorProcess();
+  std::string creatorProcessName = creatorProcess ? creatorProcess->GetProcessName() : "";
+  auto pdgId = track->GetParticleDefinition()->GetPDGEncoding();
+  if(creatorProcessName == "MuDiracMuonMinusAtomicCapture" || pdgId == 13) {  // mu-
+    *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track;
+  }
+}
 
 void Run::Manager::AddStep(const G4Step *step)
 {

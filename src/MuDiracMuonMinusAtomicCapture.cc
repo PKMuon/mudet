@@ -42,9 +42,6 @@ MuDiracMuonMinusAtomicCapture::MuDiracMuonMinusAtomicCapture(const G4String &nam
 
 G4VParticleChange *MuDiracMuonMinusAtomicCapture::AtRestDoIt(const G4Track &track, const G4Step &)
 {
-  // [TODO]
-  G4cout << "Hello from " << __PRETTY_FUNCTION__ << G4endl;
-
   // if primary is not Alive then do nothing (how?)
   theTotalResult->Initialize(track);
 
