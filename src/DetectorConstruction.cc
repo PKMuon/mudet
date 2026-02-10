@@ -31,6 +31,7 @@
 #include "G4Isotope.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
+#include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
 
@@ -44,18 +45,29 @@ DetectorConstruction::DetectorConstruction()
 
 DetectorConstruction::~DetectorConstruction() { }
 
+static G4Material *GetWorldMaterial()
+{
+  std::string name = "Th-229";
+  if(char *envname = getenv("MUDET_WORLD_MATERIAL")) name = envname;
+
+  if(name == "Th-229") {
+    // https://pubchem.ncbi.nlm.nih.gov/compound/167312#section=Computed-Properties
+    // https://pubchem.ncbi.nlm.nih.gov/element/90#section=Density
+    auto Th_229_isotope = new G4Isotope("Th-229", 90, 229, 229.03176 * g / mole);
+    auto Th_229_element = new G4Element("Th-229", "Th-229", 1);
+    Th_229_element->AddIsotope(Th_229_isotope, 100. * perCent);
+    auto Th_229_material = new G4Material("Th-229", 11.72 * (229.03176 / 232.0377) * g / cm3, 1);
+    Th_229_material->AddElement(Th_229_element, 1);
+    return Th_229_material;
+  }
+
+  return G4NistManager::Instance()->FindOrBuildMaterial(name);  // e.g., G4_Al, G4_Cu
+}
+
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
-  // https://pubchem.ncbi.nlm.nih.gov/compound/167312#section=Computed-Properties
-  // https://pubchem.ncbi.nlm.nih.gov/element/90#section=Density
-  auto Th_229_isotope = new G4Isotope("Th-229", 90, 229, 229.03176 * g / mole);
-  auto Th_229_element = new G4Element("Th-229", "Th-229", 1);
-  Th_229_element->AddIsotope(Th_229_isotope, 100. * perCent);
-  auto Th_229_material = new G4Material("Th-229", 11.72 * (229.03176 / 232.0377) * g / cm3, 1);
-  Th_229_material->AddElement(Th_229_element, 1);
-
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
-  auto world_l = new G4LogicalVolume(world_s, Th_229_material, "world");
+  auto world_l = new G4LogicalVolume(world_s, GetWorldMaterial(), "world");
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
 
   return world_p;
