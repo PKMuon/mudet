@@ -33,7 +33,7 @@ class MuDiracMuonMinusAtomicCapture : public G4MuonMinusAtomicCapture_11_3_2 {
 public:
   explicit MuDiracMuonMinusAtomicCapture(const G4String &name = "MuDiracMuonMinusAtomicCapture");
 
-  virtual G4VParticleChange *AtRestDoIt(const G4Track &, const G4Step &);
+  G4VParticleChange *AtRestDoIt(const G4Track &, const G4Step &) override;
 };
 
 #endif

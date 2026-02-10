@@ -32,11 +32,10 @@
 class MuDiracMuonMinusAtomicCaptureConstructor : public G4VPhysicsConstructor {
 public:
   MuDiracMuonMinusAtomicCaptureConstructor(const G4String &name = "MuDiracMuonMinusAtomicCaptureConstructor");
-  virtual ~MuDiracMuonMinusAtomicCaptureConstructor() = default;
 
 protected:
-  virtual void ConstructParticle() override;
-  virtual void ConstructProcess() override;
+  void ConstructParticle() override;
+  void ConstructProcess() override;
 };
 
 #endif

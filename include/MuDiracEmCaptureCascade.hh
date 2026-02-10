@@ -33,9 +33,9 @@ class MuDiracEmCaptureCascade : public G4EmCaptureCascade_11_3_2 {
 public:
   explicit MuDiracEmCaptureCascade();
 
-  virtual ~MuDiracEmCaptureCascade();
+  ~MuDiracEmCaptureCascade() override;
 
-  virtual G4HadFinalState *ApplyYourself(const G4HadProjectile &aTrack, G4Nucleus &targetNucleus) override;
+  G4HadFinalState *ApplyYourself(const G4HadProjectile &aTrack, G4Nucleus &targetNucleus) override;
 
 private:
   // [TODO]
