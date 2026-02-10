@@ -41,7 +41,6 @@ MuDiracEmCaptureCascade::~MuDiracEmCaptureCascade() { }
 G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &projectile, G4Nucleus &targetNucleus)
 {
   // [TODO]
-  G4cout << "Hello from " << __PRETTY_FUNCTION__ << G4endl;
 
   result.Clear();
   result.SetStatusChange(isAlive);

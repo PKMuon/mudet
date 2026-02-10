@@ -36,7 +36,6 @@
 
 #include "G4LogicalVolumeStore.hh"
 #include "G4Step.hh"
-#include "G4Threading.hh"
 #include "G4Track.hh"
 #include "G4VProcess.hh"
 #include "G4ios.hh"
@@ -78,7 +77,7 @@ private:
 
 Run::Run()
 {
-  G4String filename = fDirName + "/" + std::to_string(G4Threading::G4GetThreadId()) + ".root";
+  G4String filename = fDirName + "/" + std::to_string(gettid()) + ".root";
   auto parent = fs::path(filename.c_str()).parent_path();
   if(!parent.empty()) fs::create_directories(parent);
 

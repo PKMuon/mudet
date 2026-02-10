@@ -1,7 +1,13 @@
 #!/bin/bash
 
-./mudet run.mac &
-PID=$!
+PID_BEG="" PID_END="" INPUTS="" TEMPS=""
+for i in $(seq $(nproc)); do
+    ./mudet run.mac &
+    [ -z "${PID_BEG}" ] && PID_BEG="$!"
+    PID_END="$!"
+    INPUTS="${INPUTS} tree/$!/$!.root"
+    TEMPS="${TEMPS} tree/$!"
+done
 wait
-hadd tree/$PID.root $(ls tree/$PID/*.root | sort -V) && ln -sf $PID.root tree/latest.root
-rm -rf tree/$PID
+hadd "tree/${PID_BEG}-${PID_END}.root" ${INPUTS} && ln -sf "tree/${PID_BEG}-${PID_END}.root" tree/latest.root
+rm -rf ${TEMPS}
