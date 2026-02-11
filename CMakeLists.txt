@@ -96,3 +96,11 @@ foreach(script ${scripts})
     get_filename_component(script ${script} NAME)
     configure_file(${script} ${script} COPYONLY)
 endforeach()
+
+# copy mudirac data to build/mudirac_data
+file(GLOB mudirac_data CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/mudirac_data/*.dat)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/mudirac_data)
+foreach(data ${mudirac_data})
+    get_filename_component(fname ${data} NAME)
+    configure_file(${data} ${PROJECT_BINARY_DIR}/mudirac_data/${fname} COPYONLY)
+endforeach()

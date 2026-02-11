@@ -1,1 +1,3 @@
 build/
+mudirac_data/generate/*
+!mudirac_data/generate/*.py
