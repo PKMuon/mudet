@@ -36,14 +36,6 @@ public:
   ~MuDiracEmCaptureCascade() override;
 
   G4HadFinalState *ApplyYourself(const G4HadProjectile &aTrack, G4Nucleus &targetNucleus) override;
-
-private:
-  // [DONE]
-  G4ParticleDefinition* theElectron;
-  G4ParticleDefinition* theGamma;
-  G4HadFinalState result;
-  G4double fMuMass;
-  G4double fTime;
 };
 
 #endif

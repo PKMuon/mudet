@@ -1,102 +1,88 @@
+//
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  Geant4 software  is  copyright of the Copyright Holders  of *
+// * the Geant4 Collaboration.  It is provided  under  the terms  and *
+// * conditions of the Geant4 Software License,  included in the file *
+// * LICENSE and available at  http://cern.ch/geant4/license .  These *
+// * include a list of copyright holders.                             *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GEANT4 collaboration.                      *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the Geant4 Software license.          *
+// ********************************************************************
+//
+
 #include "MuDiracDataHelper.hh"
 
+#include <fstream>
+#include <iostream>
+#include <mutex>
+
 #include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4NucleiProperties.hh"
-#include "G4MuonMinus.hh"
 #include "Randomize.hh"
 
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <iostream>
-
-
-MuDiracDataHelper* MuDiracDataHelper::fpInstance = nullptr;
-
-MuDiracDataHelper* MuDiracDataHelper::GetInstance()
+MuDiracDataHelper *MuDiracDataHelper::GetInstance()
 {
-  if (!fpInstance) {
-    fpInstance = new MuDiracDataHelper();
-  }
-  return fpInstance;
+  static MuDiracDataHelper gInstance;
+  return &gInstance;
 }
 
-MuDiracDataHelper::MuDiracDataHelper() {}
-MuDiracDataHelper::~MuDiracDataHelper() {}
+MuDiracDataHelper::MuDiracDataHelper() { }
 
-std::string MuDiracDataHelper::GetKey(G4int Z, G4int A, G4int ni, G4int nf) const
-{
-  std::stringstream ss;
-  ss << Z << "_" << A << "_" << ni << "_" << nf;
-  return ss.str();
-}
+MuDiracDataHelper::~MuDiracDataHelper() { }
 
-void MuDiracDataHelper::LoadData(G4int Z, G4int A, G4int ni, G4int nf)
+const std::vector<std::pair<G4double, G4double>> *MuDiracDataHelper::QueryData(G4int Z, G4int A, G4int ni, G4int nf)
 {
-  std::string key = GetKey(Z, A, ni, nf);
-  
-  if (fDataMap.find(key) != fDataMap.end()) return;
+  auto it = fDataMap.find({ Z, A, ni, nf });
+  if(it != fDataMap.end()) return &it->second;
+
+  static std::mutex fDataMapMutex;
+  std::lock_guard<std::mutex> lock(fDataMapMutex);
+  it = fDataMap.find({ Z, A, ni, nf });
+  if(it != fDataMap.end()) return &it->second;
+
+  std::stringstream filename;
+  filename << "../mudirac_data/Z" << Z << "_A" << A << "_Ni" << ni << "_Nf" << nf << ".dat";
+  std::ifstream file(filename.str());
+  if(!file) return nullptr;
 
   std::vector<std::pair<G4double, G4double>> cdf;
-  
-  std::stringstream filename;
-  filename << "./mudirac_data/Z" << Z << "_A" << A << "_Ni" << ni << "_Nf" << nf << ".dat";
-  
-  std::ifstream file(filename.str());
-  
-  if (file.is_open()) {
-    G4double energy, prob;
-    G4double cumulative = 0.0;
-    
-    while (file >> energy >> prob) {
-      if (prob > 0) {
-        cumulative += prob;
-        cdf.push_back({energy * eV, cumulative}); 
-      }
+  G4double energy, prob, cumulative = 0.0;
+  while(file >> energy >> prob) {
+    if(prob > 0) {
+      cumulative += prob;
+      cdf.emplace_back(energy * eV, cumulative);
     }
-    
-    if (cumulative > 0) {
-      for (auto &pair : cdf) {
-        pair.second /= cumulative;
-      }
-    }
-  } 
-  else { G4cout << "MuDirac file missing: " << filename.str() << G4endl; }
+  }
+  if(cumulative == 0) return nullptr;
 
-  fDataMap[key] = cdf;
+  for(auto &[e, p] : cdf) { p /= cumulative; }
+  it = fDataMap.emplace(std::make_tuple(Z, A, ni, nf), std::move(cdf)).first;
+  return &it->second;
 }
 
-G4double MuDiracDataHelper::GetTransitionEnergy(G4int Z, G4int A, G4int nLevelInitial, G4int nLevelFinal)
+G4double MuDiracDataHelper::GetTransitionEnergy(G4int Z, G4int A, G4int ni, G4int nf)
 {
-
-  G4int nInitial = nLevelInitial + 1;
-  G4int nFinal = nLevelFinal + 1;
-  LoadData(Z, A, nInitial, nFinal);
-  
-  std::string key = GetKey(Z, A, nInitial, nFinal);
-  const auto& cdf = fDataMap[key];
-
-  if (cdf.empty()) {
-    // G4cout << "[Warning] No data for Z=" << Z << ", A=" << A << ", nInitial=" << nInitial << ", nFinal=" << nFinal 
-    //        << ". Using Bohr model approximation." << G4endl;
-    G4double muMass = G4MuonMinus::MuonMinus()->GetPDGMass();
-    G4double massA = G4NucleiProperties::GetNuclearMass(A, Z);
-    G4double reducedMass = muMass * massA / (muMass + massA);
-    
-    G4double rydberg = 13.6 * eV * (Z * Z) * reducedMass / electron_mass_c2;
-    
-    return rydberg * (1.0/(nFinal*nFinal) - 1.0/(nInitial*nInitial));
+  const std::vector<std::pair<G4double, G4double>> *data = QueryData(Z, A, ni, nf);
+  if(data == nullptr) {
+    G4cout << "Warning: No data for Z=" << Z << ", A=" << A << ", Ni=" << ni << ", Nf=" << nf << "." << G4endl;
+    return 0.0 / 0.0;
   }
-
-  G4double rnd = G4UniformRand();
-  auto it = std::lower_bound(cdf.begin(), cdf.end(), rnd, 
-      [](const std::pair<G4double, G4double>& element, G4double value) {
-          return element.second < value;
-      });
-
-  if (it != cdf.end()) {
-      return it->first;
-  }
-  return cdf.back().first;
+  auto it = std::upper_bound(data->begin(), data->end(), G4UniformRand(),
+      [](G4double value, const std::pair<G4double, G4double> &entry) { return value < entry.second; });
+  //G4cout << "Debug: Sampled energy " << it->first / MeV << " MeV for Z=" << Z << ", A=" << A << ", Ni=" << ni
+  //       << ", Nf=" << nf << "." << G4endl;
+  return it->first;
 }

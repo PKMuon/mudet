@@ -23,70 +23,46 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-//-----------------------------------------------------------------------------
-//
-// GEANT4 Class file
-//
-// File name:  MuDiracEmCaptureCascade
-//
-// Author:        V.Ivanchenko (Vladimir.Ivantchenko@cern.ch)
-//
-// Creation date: 22 April 2012 on base of G4MuMinusCaptureCascade
-//
-//
-//-----------------------------------------------------------------------------
-//
-// Modifications:
-// Feb 11 2026: Y.P. Wu(
-// overwrite deltaE with data from MuDirac, and add dataloader)
-// 
-//-----------------------------------------------------------------------------
 
 #include "MuDiracEmCaptureCascade.hh"
 
-#include "MuDiracDataHelper.hh"
+#include <math.h>
 
-#include "G4Electron.hh"
-#include "G4Gamma.hh"
-#include "G4MuonMinus.hh"
 #include "G4NucleiProperties.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "MuDiracDataHelper.hh"
 #include "Randomize.hh"
 
-MuDiracEmCaptureCascade::MuDiracEmCaptureCascade()
-{
-  // [DONE]
-  theElectron = G4Electron::Electron();
-  theGamma = G4Gamma::Gamma();
-  fMuMass = G4MuonMinus::MuonMinus()->GetPDGMass();
-  fTime = 0.0;
-}
+MuDiracEmCaptureCascade::MuDiracEmCaptureCascade() { }
 
 MuDiracEmCaptureCascade::~MuDiracEmCaptureCascade() { }
 
 G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &projectile, G4Nucleus &targetNucleus)
 {
-  // [DONE]
+  MuDiracDataHelper *helper = MuDiracDataHelper::GetInstance();
+
   result.Clear();
   result.SetStatusChange(isAlive);
   fTime = projectile.GetGlobalTime();
 
   G4int Z = targetNucleus.GetZ_asInt();
   G4int A = targetNucleus.GetA_asInt();
+  G4double massA = G4NucleiProperties::GetNuclearMass(A, Z);
+  G4double mass = fMuMass * massA / (fMuMass + massA);
+  G4double e = 13.6 * eV * (Z * Z) * mass / electron_mass_c2;
+
+  // precise corrections of energy only for K-shell
+  fLevelEnergy[0] = fKLevelEnergy[std::min(Z, 92)];
+  for(G4int i = 1; i < 14; ++i) { fLevelEnergy[i] = e / (G4double)((i + 1) * (i + 1)); }
 
   G4int nElec = Z;
   G4int nAuger = 1;
-  
-
-  G4int nLevel = 13; 
+  G4int nLevel = 13;
   G4double pGamma = (Z * Z * Z * Z);
 
-  // [NEW] add dataloader
-  MuDiracDataHelper* helper = MuDiracDataHelper::GetInstance();
-  G4double edep = 0.0; 
-  
+  // Capture on 14-th level
+  G4double edep = fLevelEnergy[13];
   AddNewParticle(theElectron, edep);
   G4double deltaE;
 
@@ -97,30 +73,27 @@ G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &p
     // case of Auger electrons
     if((nAuger < nElec) && ((pGamma + 10000.0) * G4UniformRand() < 10000.0)) {
       ++nAuger;
-      deltaE = helper->GetTransitionEnergy(Z, A, nLevel, nLevel - 1);
-      --nLevel; 
+      deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, nLevel);
+      if(isnan(deltaE)) deltaE = fLevelEnergy[nLevel - 1] - fLevelEnergy[nLevel];
+      --nLevel;
       AddNewParticle(theElectron, deltaE);
 
     } else {
       // Case of photon cascade, probabilities from
       // C.S.Wu and L.Wilets, Ann. Rev. Nuclear Sci. 19 (1969) 527.
+
       G4double var = (10.0 + G4double(nLevel - 1)) * G4UniformRand();
       G4int iLevel = nLevel - 1;
       if(var > 10.0) iLevel -= G4int(var - 10.0) + 1;
       if(iLevel < 0) iLevel = 0;
-      deltaE = helper->GetTransitionEnergy(Z, A, nLevel, iLevel);
-      
+      deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, iLevel + 1);
+      if(isnan(deltaE)) deltaE = fLevelEnergy[iLevel] - fLevelEnergy[nLevel];
       nLevel = iLevel;
       AddNewParticle(theGamma, deltaE);
     }
     edep += deltaE;
 
-    // G4cout << "[[DEBUG]]" << " Z: " << Z
-    //       << " A: " << A
-    //       << " nLevel: " << nLevel
-    //       << " deltaE: " << deltaE / keV << " keV"
-    //       << G4endl;
-    //Loop checking
+    // Loop checking, 06-Aug-2015, Vladimir Ivanchenko
   } while(nLevel > 0);
 
   result.SetLocalEnergyDeposit(edep);
