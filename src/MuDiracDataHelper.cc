@@ -28,15 +28,14 @@
 
 #include <fstream>
 #include <iostream>
-#include <mutex>
 
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
 MuDiracDataHelper *MuDiracDataHelper::GetInstance()
 {
-  static MuDiracDataHelper gInstance;
-  return &gInstance;
+  static thread_local MuDiracDataHelper tInstance;
+  return &tInstance;
 }
 
 MuDiracDataHelper::MuDiracDataHelper() { }
@@ -46,11 +45,6 @@ MuDiracDataHelper::~MuDiracDataHelper() { }
 const std::vector<std::pair<G4double, G4double>> *MuDiracDataHelper::QueryData(G4int Z, G4int A, G4int ni, G4int nf)
 {
   auto it = fDataMap.find({ Z, A, ni, nf });
-  if(it != fDataMap.end()) return &it->second;
-
-  static std::mutex fDataMapMutex;
-  std::lock_guard<std::mutex> lock(fDataMapMutex);
-  it = fDataMap.find({ Z, A, ni, nf });
   if(it != fDataMap.end()) return &it->second;
 
   std::stringstream filename;
