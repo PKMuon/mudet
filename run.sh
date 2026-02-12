@@ -9,5 +9,5 @@ for i in $(seq $(nproc)); do
     TEMPS="${TEMPS} tree/$!"
 done
 wait
-hadd "tree/${PID_BEG}-${PID_END}.root" ${INPUTS} && ln -sf "tree/${PID_BEG}-${PID_END}.root" tree/latest.root
+hadd "tree/${PID_BEG}-${PID_END}.root" ${INPUTS} && ln -sf "${PID_BEG}-${PID_END}.root" tree/latest.root
 rm -rf ${TEMPS}
