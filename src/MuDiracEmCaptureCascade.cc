@@ -34,7 +34,11 @@
 #include "MuDiracDataHelper.hh"
 #include "Randomize.hh"
 
-MuDiracEmCaptureCascade::MuDiracEmCaptureCascade() { }
+MuDiracEmCaptureCascade::MuDiracEmCaptureCascade() : fMuDiracEnabled(true)
+{
+  char *content = getenv("MUDET_DISABLE_MUDIRAC");
+  if(content && *content) fMuDiracEnabled = false;
+}
 
 MuDiracEmCaptureCascade::~MuDiracEmCaptureCascade() { }
 
@@ -73,7 +77,8 @@ G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &p
     // case of Auger electrons
     if((nAuger < nElec) && ((pGamma + 10000.0) * G4UniformRand() < 10000.0)) {
       ++nAuger;
-      deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, nLevel);
+      deltaE = 0.0 / 0.0;
+      if(fMuDiracEnabled) deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, nLevel);
       if(isnan(deltaE)) deltaE = fLevelEnergy[nLevel - 1] - fLevelEnergy[nLevel];
       --nLevel;
       AddNewParticle(theElectron, deltaE);
@@ -86,7 +91,8 @@ G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &p
       G4int iLevel = nLevel - 1;
       if(var > 10.0) iLevel -= G4int(var - 10.0) + 1;
       if(iLevel < 0) iLevel = 0;
-      deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, iLevel + 1);
+      deltaE = 0.0 / 0.0;
+      if(fMuDiracEnabled) deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, iLevel + 1);
       if(isnan(deltaE)) deltaE = fLevelEnergy[iLevel] - fLevelEnergy[nLevel];
       nLevel = iLevel;
       AddNewParticle(theGamma, deltaE);
