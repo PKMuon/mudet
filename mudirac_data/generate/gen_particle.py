@@ -7,14 +7,14 @@ import subprocess
 # Z = 90
 # ISOTOPE = 229
 # MAX_N = 14  
-ELEMENT = "Cu"
-Z = 29
-ISOTOPE = 65
+# ELEMENT = "Cu"
+# Z = 29
+# ISOTOPE = 63
+# MAX_N = 14
+ELEMENT = "Al"
+Z = 13
+ISOTOPE = 27
 MAX_N = 14
-# ELEMENT = "Al"
-# Z = 13
-# ISOTOPE = 27
-# MAX_N = 4
 OUTPUT_DIR = "./.."
 MUDIRAC_EXEC = "mudirac" 
 SHELL_MAP = {
@@ -89,6 +89,9 @@ for ni in range(2, MAX_N + 1):
             f.write(f"isotope: {ISOTOPE}\n")
             f.write(f"xr_lines: {lines_str}\n")
             f.write(f"write_spec: T\n") 
+            f.write(f"nuclear_model: FERMI2\n")
+            f.write(f"electronic_config: {ELEMENT}\n")
+            f.write(f"uehling_correction: T\n")
         
         print(f"Running {job_name} [Lines: {lines_str}] ...")
         
