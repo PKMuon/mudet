@@ -36,6 +36,9 @@ public:
   ~MuDiracEmCaptureCascade() override;
 
   G4HadFinalState *ApplyYourself(const G4HadProjectile &aTrack, G4Nucleus &targetNucleus) override;
+
+protected:
+  bool fMuDiracEnabled;
 };
 
 #endif
