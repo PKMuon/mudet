@@ -3,18 +3,18 @@ import subprocess
 
 # configuration
 
-# ELEMENT = "Th"
-# Z = 90
-# ISOTOPE = 229
-# MAX_N = 14  
+ELEMENT = "Th"
+Z = 90
+ISOTOPE = 232
+MAX_N = 14  
 # ELEMENT = "Cu"
 # Z = 29
 # ISOTOPE = 63
 # MAX_N = 14
-ELEMENT = "Al"
-Z = 13
-ISOTOPE = 27
-MAX_N = 14
+# ELEMENT = "Al"
+# Z = 13
+# ISOTOPE = 27
+# MAX_N = 14
 OUTPUT_DIR = "./.."
 MUDIRAC_EXEC = "mudirac" 
 SHELL_MAP = {
