@@ -47,21 +47,65 @@ DetectorConstruction::~DetectorConstruction() { }
 
 static G4Material *GetWorldMaterial()
 {
-  std::string name = "Th-229";
-  if(char *envname = getenv("MUDET_WORLD_MATERIAL")) name = envname;
+  std::string name_in = "Th-229";
+  if(char *envname = getenv("MUDET_WORLD_MATERIAL")) name_in = envname;
 
-  if(name == "Th-229") {
-    // https://pubchem.ncbi.nlm.nih.gov/compound/167312#section=Computed-Properties
-    // https://pubchem.ncbi.nlm.nih.gov/element/90#section=Density
-    auto Th_229_isotope = new G4Isotope("Th-229", 90, 229, 229.03176 * g / mole);
-    auto Th_229_element = new G4Element("Th-229", "Th-229", 1);
-    Th_229_element->AddIsotope(Th_229_isotope, 100. * perCent);
-    auto Th_229_material = new G4Material("Th-229", 11.72 * (229.03176 / 232.0377) * g / cm3, 1);
-    Th_229_material->AddElement(Th_229_element, 1);
-    return Th_229_material;
-  }
+  auto nist = G4NistManager::Instance();
+  G4Element *F_element = nist->FindOrBuildElement("F");
+  G4Element *Ca_element = nist->FindOrBuildElement("Ca");
+  G4Element *Sr_element = nist->FindOrBuildElement("Sr");
 
-  return G4NistManager::Instance()->FindOrBuildMaterial(name);  // e.g., G4_Al, G4_Cu
+  // https://pubchem.ncbi.nlm.nih.gov/compound/167312#section=Computed-Properties
+  // https://pubchem.ncbi.nlm.nih.gov/compound/11817119#section=Computed-Properties
+  // https://pubchem.ncbi.nlm.nih.gov/element/90#section=Density
+  auto Th_229_isotope = new G4Isotope("Th-229", 90, 229, 229.03176 * g / mole);
+  auto Th_232_isotope = new G4Isotope("Th-232", 90, 232, 232.03805 * g / mole);
+  auto Th_229_element = new G4Element("Th-229", "Th-229", 1);
+  Th_229_element->AddIsotope(Th_229_isotope, 100. * perCent);
+  auto Th_232_element = new G4Element("Th-232", "Th-232", 1);
+  Th_232_element->AddIsotope(Th_232_isotope, 100. * perCent);
+  auto Th_229_material = new G4Material("Th-229", 11.72 * (229.03176 / 232.0377) * g / cm3, 1);
+  Th_229_material->AddElement(Th_229_element, 1);
+  auto Th_232_material = new G4Material("Th-232", 11.72 * (232.03805 / 232.0377) * g / cm3, 1);
+  Th_232_material->AddElement(Th_232_element, 1);
+
+  auto build_Th_XF2_material = [=](const G4String &name, G4double Th_232_number_density, G4double Th_229_number_density,
+                                   G4double pure_XF2_density, G4double pure_XF2_molar_mass, G4Element *X_element) {
+    const G4double Th_232_density = Th_232_number_density / CLHEP::Avogadro * Th_232_isotope->GetA();
+    const G4double Th_229_density = Th_229_number_density / CLHEP::Avogadro * Th_229_isotope->GetA();
+    const G4double pure_XF2_number_density = pure_XF2_density / pure_XF2_molar_mass * CLHEP::Avogadro;
+    const G4double Th_232_fraction = Th_232_number_density / pure_XF2_number_density;
+    const G4double Th_229_fraction = Th_229_number_density / pure_XF2_number_density;
+    G4double Th_XF2_density_boost = 1;
+    Th_XF2_density_boost += Th_232_fraction * (Th_232_isotope->GetA() / X_element->GetA() - 1);
+    Th_XF2_density_boost += Th_229_fraction * (Th_229_isotope->GetA() / X_element->GetA() - 1);
+    const G4double Th_XF2_density = pure_XF2_density * Th_XF2_density_boost;
+
+    const G4double X_number_density = pure_XF2_number_density - Th_232_number_density - Th_229_number_density;
+    const G4double F_number_density = pure_XF2_number_density * 2;
+    const G4double X_density = X_number_density / CLHEP::Avogadro * X_element->GetA();
+    const G4double F_density = F_number_density / CLHEP::Avogadro * F_element->GetA();
+    auto Th_XF2_material = new G4Material(name, Th_XF2_density, 4);
+    Th_XF2_material->AddElement(Th_232_element, Th_232_density / Th_XF2_density);
+    Th_XF2_material->AddElement(Th_229_element, Th_229_density / Th_XF2_density);
+    Th_XF2_material->AddElement(X_element, X_density / Th_XF2_density);
+    Th_XF2_material->AddElement(F_element, F_density / Th_XF2_density);
+    return Th_XF2_material;
+  };
+
+  // https://www.crystran.com/optical-materials/calcium-fluoride-caf2/
+  // https://www.crystran.com/optical-materials/strontium-fluoride-srf2/
+  auto Th_CaF2_material =
+      build_Th_XF2_material("Th:CaF2", 3.86e19 / cm3, 1.15e11 / cm3, 3.18 * g / cm3, 78.08 * g / mole, Ca_element);
+  auto Th_SrF2_material =
+      build_Th_XF2_material("Th:SrF2", 4.72e20 / cm3, 1.4e12 / cm3, 4.24 * g / cm3, 125.62 * g / mole, Sr_element);
+
+  if(name_in == "Th-229") return Th_229_material;
+  if(name_in == "Th-232") return Th_232_material;
+  if(name_in == "Th:CaF2") return Th_CaF2_material;
+  if(name_in == "Th:SrF2") return Th_SrF2_material;
+
+  return G4NistManager::Instance()->FindOrBuildMaterial(name_in);  // e.g., G4_Al, G4_Cu
 }
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
