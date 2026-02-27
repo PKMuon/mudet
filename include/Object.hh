@@ -29,8 +29,11 @@
 
 #include <TObject.h>
 
+#include <tuple>
+
 class G4Track;
 class G4LogicalVolume;
+class G4Nucleus;
 
 class Track : public TObject {
 public:
@@ -65,6 +68,24 @@ public:
   Double_t ProtonThreshold;
 
   ClassDef(Cuts, 1);
+};
+
+class MuonCapture : public TObject {
+public:
+  MuonCapture &operator=(std::tuple<const G4Nucleus &, const G4Track &>);
+
+  Double_t NucleonZ;
+  Double_t NucleonA;
+  Double_t MuonPx;
+  Double_t MuonPy;
+  Double_t MuonPz;
+  Double_t MuonE;
+  Double_t MuonX;
+  Double_t MuonY;
+  Double_t MuonZ;
+  Double_t MuonT;
+
+  ClassDef(MuonCapture, 1);
 };
 
 #endif

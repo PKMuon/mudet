@@ -32,5 +32,6 @@
 
 #pragma link C++ class Track+;
 #pragma link C++ class Cuts+;
+#pragma link C++ class MuonCapture+;
 
 #endif

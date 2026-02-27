@@ -65,6 +65,7 @@ public:
   void Reset();
   void AddTrack(const G4Track *track);
   void AddStep(const G4Step *track);
+  void AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon);
   void SaveCuts();
 
 private:
@@ -72,6 +73,7 @@ private:
   TTree *fCuts;
   TClonesArray Tracks;
   TClonesArray Cuts;
+  TClonesArray MuonCaptures;
   Double_t EnergyDeposit, NonIonizingEnergyDeposit;
 };
 
@@ -116,7 +118,10 @@ void Run::AddTrack(const G4Track *track) { fManager->AddTrack(track); }
 
 void Run::AddStep(const G4Step *step) { fManager->AddStep(step); }
 
-Run::Manager::Manager() : Tracks("Track"), Cuts("Cuts"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
+void Run::AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon) { fManager->AddMuonCapture(nucleus, muon); }
+
+Run::Manager::Manager()
+    : Tracks("Track"), Cuts("Cuts"), MuonCaptures("MuonCapture"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
 {
   fFile = NULL;
   fCuts = NULL;
@@ -132,6 +137,7 @@ Run::Manager::~Manager()
 void Run::Manager::Branch(TTree *tree)
 {
   tree->Branch("Tracks", &Tracks);
+  tree->Branch("MuonCaptures", &MuonCaptures);
   tree->Branch("EnergyDeposit", &EnergyDeposit);
   tree->Branch("NonIonizingEnergyDeposit", &NonIonizingEnergyDeposit);
 
@@ -171,6 +177,7 @@ void Run::Manager::PreFill()
 void Run::Manager::Reset()
 {
   Tracks.Clear();
+  MuonCaptures.Clear();
   EnergyDeposit = 0;
   NonIonizingEnergyDeposit = 0;
 }
@@ -189,6 +196,11 @@ void Run::Manager::AddStep(const G4Step *step)
 {
   EnergyDeposit += step->GetTotalEnergyDeposit();
   NonIonizingEnergyDeposit += step->GetNonIonizingEnergyDeposit();
+}
+
+void Run::Manager::AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon)
+{
+  *(MuonCapture *)MuonCaptures.ConstructedAt(MuonCaptures.GetEntries()) = { *nucleus, *muon };
 }
 
 void Run::Manager::SaveCuts()

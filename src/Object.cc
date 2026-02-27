@@ -28,6 +28,7 @@
 
 #include "G4LogicalVolume.hh"
 #include "G4MaterialCutsCouple.hh"
+#include "G4Nucleus.hh"
 #include "G4ProductionCuts.hh"
 #include "G4RToEConvForElectron.hh"
 #include "G4RToEConvForGamma.hh"
@@ -69,6 +70,27 @@ Cuts &Cuts::operator=(const G4LogicalVolume &volume)
   ElectronThreshold = G4RToEConvForElectron().Convert(ElectronCut, material);
   PositronThreshold = G4RToEConvForPositron().Convert(PositronCut, material);
   ProtonThreshold = G4RToEConvForProton().Convert(ProtonCut, material);
+
+  return *this;
+}
+
+MuonCapture &MuonCapture::operator=(std::tuple<const G4Nucleus &, const G4Track &> data)
+{
+  auto [nucleus, track] = data;
+  auto position = track.GetPosition();
+  auto momentum = track.GetMomentum();
+
+  NucleonZ = nucleus.GetZ_asInt();
+  NucleonA = nucleus.GetA_asInt();
+
+  MuonPx = momentum.getX();
+  MuonPy = momentum.getY();
+  MuonPz = momentum.getZ();
+  MuonE = track.GetTotalEnergy();
+  MuonX = position.getX();
+  MuonY = position.getY();
+  MuonZ = position.getZ();
+  MuonT = track.GetGlobalTime();
 
   return *this;
 }
