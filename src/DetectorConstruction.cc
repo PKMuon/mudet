@@ -41,13 +41,13 @@ DetectorConstruction::DetectorConstruction()
 {
   fWorldX = 40 * cm;
   fWorldY = 40 * cm;
-  fWorldZ = 20 * cm;
+  fWorldZ = 40 * cm;
   fTargetX = 2 * cm;
   fTargetY = 2 * cm;
   fTargetZ = 2 * cm;
   fHPGeInnerR = 3 * cm;
   fHPGeOuterR = 15 * cm;
-  fHPGeLength = 10 * cm;
+  fHPGeLength = 15 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
 
