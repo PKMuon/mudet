@@ -24,6 +24,8 @@
 // ********************************************************************
 //
 
+#include <unistd.h>
+
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
 #include "G4RunManagerFactory.hh"
@@ -50,6 +52,8 @@ int main(int argc, char **argv)
 
   // Optionally: choose a different Random engine...
   // G4Random::setTheEngine(new CLHEP::MTwistEngine);
+
+  CLHEP::HepRandom::setTheSeed(time(0) ^ getpid());
 
   //use G4SteppingVerboseWithUnits
   G4int precision = 4;
