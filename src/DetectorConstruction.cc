@@ -45,10 +45,10 @@ DetectorConstruction::DetectorConstruction()
 
 DetectorConstruction::~DetectorConstruction() { }
 
-static G4Material *GetWorldMaterial()
+static G4Material *GetTargetMaterial()
 {
   std::string name_in = "Th-229";
-  if(char *envname = getenv("MUDET_WORLD_MATERIAL")) name_in = envname;
+  if(char *envname = getenv("MUDET_TARGET_MATERIAL")) name_in = envname;
 
   auto nist = G4NistManager::Instance();
   G4Element *F_element = nist->FindOrBuildElement("F");
@@ -111,7 +111,7 @@ static G4Material *GetWorldMaterial()
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
-  auto world_l = new G4LogicalVolume(world_s, GetWorldMaterial(), "world");
+  auto world_l = new G4LogicalVolume(world_s, GetTargetMaterial(), "world");
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
 
   return world_p;
