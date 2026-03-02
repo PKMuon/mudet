@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PID_BEG="" PID_END="" INPUTS="" TEMPS=""
-for i in $(seq $(nproc)); do
+for i in $(seq 100); do
     ./mudet run.mac &
     [ -z "${PID_BEG}" ] && PID_BEG="$!"
     PID_END="$!"
