@@ -41,13 +41,13 @@ DetectorConstruction::DetectorConstruction()
 {
   fWorldX = 40 * cm;
   fWorldY = 40 * cm;
-  fWorldZ = 10 * cm;
+  fWorldZ = 20 * cm;
   fTargetX = 2 * cm;
   fTargetY = 2 * cm;
   fTargetZ = 2 * cm;
   fHPGeInnerR = 3 * cm;
   fHPGeOuterR = 15 * cm;
-  fHPGeLength = 3 * cm;
+  fHPGeLength = 10 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
 
@@ -121,7 +121,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   auto nist = G4NistManager::Instance();
 
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
-  auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_Air"), "world");
+  auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_AIR"), "world");
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
 
   auto target_s = new G4Box("target", fTargetX * 0.5, fTargetY * 0.5, fTargetZ * 0.5);

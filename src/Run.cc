@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include <filesystem>
+#include <map>
 
 #include "G4LogicalVolumeStore.hh"
 #include "G4Step.hh"
@@ -60,6 +61,8 @@ public:
   Manager();
   ~Manager();
 
+  G4LogicalVolume *GetScoringVolume();
+
   void Branch(TTree *tree);
   void PreFill();
   void Reset();
@@ -71,11 +74,19 @@ public:
 private:
   TFile *fFile;
   TTree *fCuts;
+  TClonesArray Edeps;
   TClonesArray Tracks;
   TClonesArray Cuts;
   TClonesArray MuonCaptures;
-  Double_t EnergyDeposit, NonIonizingEnergyDeposit;
+  G4LogicalVolume *fScoringVolume;
+  std::map<G4int, G4double> fEnergyDeposit;
 };
+
+G4LogicalVolume *Run::Manager::GetScoringVolume()
+{
+  if(!fScoringVolume) fScoringVolume = G4LogicalVolumeStore::GetInstance()->GetVolume("HPGe");
+  return fScoringVolume;
+}
 
 Run::Run()
 {
@@ -120,11 +131,11 @@ void Run::AddStep(const G4Step *step) { fManager->AddStep(step); }
 
 void Run::AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon) { fManager->AddMuonCapture(nucleus, muon); }
 
-Run::Manager::Manager()
-    : Tracks("Track"), Cuts("Cuts"), MuonCaptures("MuonCapture"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
+Run::Manager::Manager() : Edeps("Edep"), Tracks("Track"), Cuts("Cuts"), MuonCaptures("MuonCapture")
 {
   fFile = NULL;
   fCuts = NULL;
+  fScoringVolume = NULL;
 }
 
 Run::Manager::~Manager()
@@ -136,10 +147,9 @@ Run::Manager::~Manager()
 
 void Run::Manager::Branch(TTree *tree)
 {
+  tree->Branch("Edeps", &Edeps);
   tree->Branch("Tracks", &Tracks);
   tree->Branch("MuonCaptures", &MuonCaptures);
-  tree->Branch("EnergyDeposit", &EnergyDeposit);
-  tree->Branch("NonIonizingEnergyDeposit", &NonIonizingEnergyDeposit);
 
   fFile = tree->GetCurrentFile();
   fFile->cd();
@@ -172,14 +182,16 @@ void Run::Manager::PreFill()
   for(Int_t i = 0; i < n; ++i) tracks.push_back((Track *)Tracks[i]);
   sort(tracks.begin(), tracks.end(), [](Track *a, Track *b) { return a->Id < b->Id; });
   for(Int_t i = 0; i < n; ++i) Tracks[i] = tracks[i];
+
+  for(const auto [pdgId, edep] : fEnergyDeposit) *(Edep *)Edeps.ConstructedAt(Edeps.GetEntries()) = { pdgId, edep };
+  fEnergyDeposit.clear();
 }
 
 void Run::Manager::Reset()
 {
+  Edeps.Clear();
   Tracks.Clear();
   MuonCaptures.Clear();
-  EnergyDeposit = 0;
-  NonIonizingEnergyDeposit = 0;
 }
 
 void Run::Manager::AddTrack(const G4Track *track)
@@ -194,8 +206,9 @@ void Run::Manager::AddTrack(const G4Track *track)
 
 void Run::Manager::AddStep(const G4Step *step)
 {
-  EnergyDeposit += step->GetTotalEnergyDeposit();
-  NonIonizingEnergyDeposit += step->GetNonIonizingEnergyDeposit();
+  G4LogicalVolume *volume = step->GetTrack()->GetVolume()->GetLogicalVolume();
+  if(volume != GetScoringVolume()) return;
+  fEnergyDeposit[step->GetTrack()->GetParticleDefinition()->GetPDGEncoding()] += step->GetTotalEnergyDeposit();
 }
 
 void Run::Manager::AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon)
@@ -205,7 +218,7 @@ void Run::Manager::AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon)
 
 void Run::Manager::SaveCuts()
 {
-  *(::Cuts *)Cuts.ConstructedAt(0) = *G4LogicalVolumeStore::GetInstance()->GetVolume("world");
+  *(::Cuts *)Cuts.ConstructedAt(0) = *GetScoringVolume();
   fCuts->Fill();
   fCuts->AutoSave("SaveSelf, Overwrite");
 }

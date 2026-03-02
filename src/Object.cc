@@ -36,6 +36,15 @@
 #include "G4RToEConvForProton.hh"
 #include "G4Track.hh"
 
+Edep &Edep::operator=(std::pair<Int_t, Double_t> data)
+{
+  auto [pid, edep] = data;
+  Pid = pid;
+  Edep = edep;
+
+  return *this;
+}
+
 Track &Track::operator=(const G4Track &track)
 {
   auto position = track.GetPosition();

@@ -35,6 +35,16 @@ class G4Track;
 class G4LogicalVolume;
 class G4Nucleus;
 
+class Edep : public TObject {
+public:
+  Edep &operator=(std::pair<Int_t, Double_t>);
+
+  Int_t Pid;
+  Double_t Edep;
+
+  ClassDef(Edep, 1);
+};
+
 class Track : public TObject {
 public:
   Track &operator=(const G4Track &);

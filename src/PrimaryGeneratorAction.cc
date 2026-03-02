@@ -40,7 +40,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   G4ParticleDefinition *particle = particleTable->FindParticle("mu-");
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticleMomentumDirection({ 0, 0, 1 });
-  fParticleGun->SetParticleEnergy(100 * MeV);
+  fParticleGun->SetParticleEnergy(4 * MeV);
   fParticleGun->SetParticlePosition(detectorConstruction->GetSourcePosition());
 }
 
