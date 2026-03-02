@@ -36,6 +36,7 @@ class TTree;
 class G4Track;
 class G4Step;
 class G4Nucleus;
+class G4VParticleChange;
 
 class Run {
 public:
@@ -46,7 +47,7 @@ public:
   void FillAndReset();
   void AddTrack(const G4Track *);
   void AddStep(const G4Step *);
-  void AddMuonCapture(const G4Nucleus *, const G4Track *);
+  void AddMuonCapture(const G4Nucleus *, const G4VParticleChange *);
 
 private:
   class Manager;

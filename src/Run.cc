@@ -68,7 +68,7 @@ public:
   void Reset();
   void AddTrack(const G4Track *track);
   void AddStep(const G4Step *track);
-  void AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon);
+  void AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *change);
   void SaveCuts();
 
 private:
@@ -129,7 +129,10 @@ void Run::AddTrack(const G4Track *track) { fManager->AddTrack(track); }
 
 void Run::AddStep(const G4Step *step) { fManager->AddStep(step); }
 
-void Run::AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon) { fManager->AddMuonCapture(nucleus, muon); }
+void Run::AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *change)
+{
+  fManager->AddMuonCapture(nucleus, change);
+}
 
 Run::Manager::Manager() : Edeps("Edep"), Tracks("Track"), Cuts("Cuts"), MuonCaptures("MuonCapture")
 {
@@ -211,9 +214,9 @@ void Run::Manager::AddStep(const G4Step *step)
   fEnergyDeposit[step->GetTrack()->GetParticleDefinition()->GetPDGEncoding()] += step->GetTotalEnergyDeposit();
 }
 
-void Run::Manager::AddMuonCapture(const G4Nucleus *nucleus, const G4Track *muon)
+void Run::Manager::AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *change)
 {
-  *(MuonCapture *)MuonCaptures.ConstructedAt(MuonCaptures.GetEntries()) = { *nucleus, *muon };
+  *(MuonCapture *)MuonCaptures.ConstructedAt(MuonCaptures.GetEntries()) = { *nucleus, *change };
 }
 
 void Run::Manager::SaveCuts()

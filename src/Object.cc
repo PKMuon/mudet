@@ -35,6 +35,8 @@
 #include "G4RToEConvForPositron.hh"
 #include "G4RToEConvForProton.hh"
 #include "G4Track.hh"
+#include "G4VParticleChange.hh"
+#include "TLorentzVector.h"
 
 Edep &Edep::operator=(std::pair<Int_t, Double_t> data)
 {
@@ -83,9 +85,10 @@ Cuts &Cuts::operator=(const G4LogicalVolume &volume)
   return *this;
 }
 
-MuonCapture &MuonCapture::operator=(std::tuple<const G4Nucleus &, const G4Track &> data)
+MuonCapture &MuonCapture::operator=(std::tuple<const G4Nucleus &, const G4VParticleChange &> data)
 {
-  auto [nucleus, track] = data;
+  auto [nucleus, change] = data;
+  const G4Track &track = *change.GetCurrentTrack();
   auto position = track.GetPosition();
   auto momentum = track.GetMomentum();
 
@@ -100,6 +103,22 @@ MuonCapture &MuonCapture::operator=(std::tuple<const G4Nucleus &, const G4Track 
   MuonY = position.getY();
   MuonZ = position.getZ();
   MuonT = track.GetGlobalTime();
+
+  ElectronP4.clear();
+  GammaP4.clear();
+  for(G4int i = 0, n = change.GetNumberOfSecondaries(); i < n; ++i) {
+    const G4Track *secondary = change.GetSecondary(i);
+    std::vector<TLorentzVector> *target = NULL;
+    if(secondary->GetParticleDefinition()->GetPDGEncoding() == 11) {
+      target = &ElectronP4;
+    } else if(secondary->GetParticleDefinition()->GetPDGEncoding() == 22) {
+      target = &GammaP4;
+    }
+    if(!target) continue;
+    auto p = secondary->GetMomentum();
+    auto E = secondary->GetTotalEnergy();
+    target->emplace_back(p.x(), p.y(), p.z(), E);
+  }
 
   return *this;
 }

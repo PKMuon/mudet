@@ -26,6 +26,7 @@
 
 #include "MuDiracMuonMinusAtomicCapture.hh"
 
+#include "G4Nucleus.hh"
 #include "G4RunManager.hh"
 #include "MuDiracEmCaptureCascade.hh"
 #include "Run.hh"
@@ -40,7 +41,12 @@ MuDiracMuonMinusAtomicCapture::MuDiracMuonMinusAtomicCapture(const G4String &nam
 
 G4VParticleChange *MuDiracMuonMinusAtomicCapture::AtRestDoIt(const G4Track &track, const G4Step &step)
 {
+  if(targetNucleus.GetZ_asInt() == 32) {  // Disabled for performance.
+    theTotalResult->Initialize(track);
+    return theTotalResult;
+  }
   Run *run = ((RunAction *)G4RunManager::GetRunManager()->GetUserRunAction())->GetRun();
-  run->AddMuonCapture(&targetNucleus, &track);
-  return G4MuonMinusAtomicCapture_11_3_2::AtRestDoIt(track, step);
+  G4VParticleChange *change = G4MuonMinusAtomicCapture_11_3_2::AtRestDoIt(track, step);
+  run->AddMuonCapture(&targetNucleus, change);
+  return change;
 }

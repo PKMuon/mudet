@@ -27,6 +27,7 @@
 #ifndef Object_h
 #define Object_h 1
 
+#include <TLorentzVector.h>
 #include <TObject.h>
 
 #include <tuple>
@@ -34,6 +35,7 @@
 class G4Track;
 class G4LogicalVolume;
 class G4Nucleus;
+class G4VParticleChange;
 
 class Edep : public TObject {
 public:
@@ -82,7 +84,7 @@ public:
 
 class MuonCapture : public TObject {
 public:
-  MuonCapture &operator=(std::tuple<const G4Nucleus &, const G4Track &>);
+  MuonCapture &operator=(std::tuple<const G4Nucleus &, const G4VParticleChange &>);
 
   Double_t NucleonZ;
   Double_t NucleonA;
@@ -94,6 +96,9 @@ public:
   Double_t MuonY;
   Double_t MuonZ;
   Double_t MuonT;
+
+  std::vector<TLorentzVector> ElectronP4;
+  std::vector<TLorentzVector> GammaP4;
 
   ClassDef(MuonCapture, 1);
 };
