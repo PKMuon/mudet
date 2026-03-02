@@ -41,6 +41,8 @@ public:
 
 private:
   G4double fWorldX, fWorldY, fWorldZ;
+  G4double fTargetX, fTargetY, fTargetZ;
+  G4double fHPGeInnerR, fHPGeOuterR, fHPGeLength;
   G4ThreeVector fSourcePosition;
 };
 

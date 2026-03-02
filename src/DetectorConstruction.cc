@@ -34,12 +34,20 @@
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Tubs.hh"
+#include "G4VisAttributes.hh"
 
 DetectorConstruction::DetectorConstruction()
 {
-  fWorldX = 10 * cm;
-  fWorldY = 10 * cm;
+  fWorldX = 40 * cm;
+  fWorldY = 40 * cm;
   fWorldZ = 10 * cm;
+  fTargetX = 2 * cm;
+  fTargetY = 2 * cm;
+  fTargetZ = 2 * cm;
+  fHPGeInnerR = 3 * cm;
+  fHPGeOuterR = 15 * cm;
+  fHPGeLength = 3 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
 
@@ -110,9 +118,27 @@ static G4Material *GetTargetMaterial()
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
+  auto nist = G4NistManager::Instance();
+
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
-  auto world_l = new G4LogicalVolume(world_s, GetTargetMaterial(), "world");
+  auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_Air"), "world");
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
+
+  auto target_s = new G4Box("target", fTargetX * 0.5, fTargetY * 0.5, fTargetZ * 0.5);
+  auto target_l = new G4LogicalVolume(target_s, GetTargetMaterial(), "target");
+  G4VisAttributes target_vis;
+  target_vis.SetForceSolid();
+  target_vis.SetColor(1.0, 0.0, 0.0, 0.8);
+  target_l->SetVisAttributes(target_vis);
+  new G4PVPlacement(NULL, {}, target_l, "target", world_l, false, 0, true);
+
+  auto HPGe_s = new G4Tubs("HPGe", fHPGeInnerR, fHPGeOuterR, fHPGeLength * 0.5, 0, 360 * deg);
+  auto HPGe_l = new G4LogicalVolume(HPGe_s, nist->FindOrBuildMaterial("G4_Ge"), "HPGe");
+  G4VisAttributes HPGe_vis;
+  HPGe_vis.SetForceSolid();
+  HPGe_vis.SetColor(0.5, 0.5, 0.5, 0.8);
+  HPGe_l->SetVisAttributes(HPGe_vis);
+  new G4PVPlacement(NULL, {}, HPGe_l, "HPGe", world_l, false, 0, true);
 
   return world_p;
 }
