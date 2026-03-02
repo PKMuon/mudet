@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 plt.figure(figsize=(15, 4))
 
-events = uproot.open(f"../build/tree/latest.root")["tree"].arrays()
+events = uproot.open(f"../build/tree/latest.root")["tree"].arrays(["Edeps.Edep", "Tracks.E", "Tracks.Pid"])
 events = events[ak.num(events["Edeps.Edep"], axis=1) >= 1]
 gamma_energies = events["Tracks.E"][events["Tracks.Pid"] == 22]
 gamma_energies = ak.flatten(gamma_energies).to_numpy()

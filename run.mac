@@ -11,4 +11,4 @@
 /gun/energy 4 MeV
 #/run/setCut 0.7 mm
 /run/printProgress 1000
-/run/beamOn 10000
+/run/beamOn 1000000

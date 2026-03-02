@@ -62,7 +62,7 @@ if(ENABLE_GPROF)
     add_compile_options(${GPROF_OPTIONS})
     add_link_options(${GPROF_OPTIONS})
 endif()
-add_compile_options(-g -Wall -Wshadow -Wextra -Werror)
+add_compile_options(-g -Wall -Wshadow -Wextra -Werror -Wno-error=attributes)
 
 #----------------------------------------------------------------------------
 # Process customized TObject derivates
