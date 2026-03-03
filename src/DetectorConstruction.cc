@@ -35,6 +35,7 @@
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Tubs.hh"
+#include "G4UserLimits.hh"
 #include "G4VisAttributes.hh"
 
 DetectorConstruction::DetectorConstruction()
@@ -126,6 +127,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
   auto target_s = new G4Box("target", fTargetX * 0.5, fTargetY * 0.5, fTargetZ * 0.5);
   auto target_l = new G4LogicalVolume(target_s, GetTargetMaterial(), "target");
+  target_l->SetUserLimits(new G4UserLimits(fTargetZ * 0.01));
   G4VisAttributes target_vis;
   target_vis.SetForceSolid();
   target_vis.SetColor(1.0, 0.0, 0.0, 0.8);

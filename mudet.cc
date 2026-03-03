@@ -29,6 +29,7 @@
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
 #include "G4RunManagerFactory.hh"
+#include "G4StepLimiterPhysics.hh"
 #include "G4SteppingVerbose.hh"
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
   // Physics list
   auto physicsList = new QGSP_BERT_HP;
   physicsList->RegisterPhysics(new MuDiracMuonMinusAtomicCaptureConstructor);
+  physicsList->RegisterPhysics(new G4StepLimiterPhysics);
   physicsList->SetVerboseLevel(1);
   runManager->SetUserInitialization(physicsList);
 
