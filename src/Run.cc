@@ -186,7 +186,12 @@ void Run::Manager::PreFill()
   sort(tracks.begin(), tracks.end(), [](Track *a, Track *b) { return a->Id < b->Id; });
   for(Int_t i = 0; i < n; ++i) Tracks[i] = tracks[i];
 
-  for(const auto [pdgId, edep] : fEnergyDeposit) *(Edep *)Edeps.ConstructedAt(Edeps.GetEntries()) = { pdgId, edep };
+  //G4double edepSum = 0.0;
+  for(const auto [pdgId, edep] : fEnergyDeposit) {
+    *(Edep *)Edeps.ConstructedAt(Edeps.GetEntries()) = { pdgId, edep };
+    //edepSum += edep;
+  }
+  //G4cout << "Debug: Total energy deposit: " << edepSum / CLHEP::MeV << " MeV" << G4endl;
   fEnergyDeposit.clear();
 }
 
