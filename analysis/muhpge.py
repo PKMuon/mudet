@@ -15,7 +15,7 @@ total_edep = ak.sum(events["Edeps.Edep"], axis=1).to_numpy()
 
 for i, cut in enumerate([(0, 10), (6.05, 6.55), (9.29, 9.39)], 1):
     plt.subplot(1, 3, i)
-    plt.hist(gamma_energies, bins=100, range=cut, histtype="step", label=f"Geant4/MuDirac $E_\\gamma$")
+    plt.hist(gamma_energies, bins=100, range=cut, weights=0.1 * np.ones_like(gamma_energies), histtype="step", label=f"Geant4/MuDirac $E_\\gamma$ ($\\times$ 0.1)")
     plt.hist(total_edep, bins=100, range=cut, histtype="step", label=f"HPGe $E_\\mathrm{{dep}}$")
     plt.xlabel(r"$E$ [MeV]")
     plt.ylabel("Events")

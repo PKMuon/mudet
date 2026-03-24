@@ -46,7 +46,7 @@ DetectorConstruction::DetectorConstruction()
   fTargetX = 2 * cm;
   fTargetY = 2 * cm;
   fTargetZ = 2 * cm;
-  fHPGeInnerR = 3 * cm;
+  fHPGeInnerR = 1.5 * cm;
   fHPGeOuterR = 15 * cm;
   fHPGeLength = 15 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
