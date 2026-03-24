@@ -33,22 +33,22 @@
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
+#include "G4Sphere.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4Tubs.hh"
 #include "G4UserLimits.hh"
 #include "G4VisAttributes.hh"
 
 DetectorConstruction::DetectorConstruction()
 {
-  fWorldX = 40 * cm;
-  fWorldY = 40 * cm;
-  fWorldZ = 40 * cm;
+  fWorldX = 50 * cm;
+  fWorldY = 50 * cm;
+  fWorldZ = 50 * cm;
   fTargetX = 2 * cm;
   fTargetY = 2 * cm;
   fTargetZ = 2 * cm;
   fHPGeInnerR = 3 * cm;
-  fHPGeOuterR = 15 * cm;
-  fHPGeLength = 15 * cm;
+  fHPGeOuterR = 13 * cm;
+  fHPGeLength = 0 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
 
@@ -123,24 +123,34 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
   auto world_s = new G4Box("world", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.5);
   auto world_l = new G4LogicalVolume(world_s, nist->FindOrBuildMaterial("G4_Galactic"), "world");
-  auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
+  auto world_p = new G4PVPlacement(nullptr, {}, world_l, "world", nullptr, false, 0, true);
 
   auto target_s = new G4Box("target", fTargetX * 0.5, fTargetY * 0.5, fTargetZ * 0.5);
   auto target_l = new G4LogicalVolume(target_s, GetTargetMaterial(), "target");
   target_l->SetUserLimits(new G4UserLimits(fTargetZ * 0.01));
-  G4VisAttributes target_vis;
-  target_vis.SetForceSolid();
-  target_vis.SetColor(1.0, 0.0, 0.0, 0.8);
-  target_l->SetVisAttributes(target_vis);
-  new G4PVPlacement(NULL, {}, target_l, "target", world_l, false, 0, true);
 
-  auto HPGe_s = new G4Tubs("HPGe", fHPGeInnerR, fHPGeOuterR, fHPGeLength * 0.5, 0, 360 * deg);
+  auto target_vis = new G4VisAttributes();
+  target_vis->SetForceSolid();
+  target_vis->SetColor(1.0, 0.0, 0.0, 0.8);
+  target_l->SetVisAttributes(target_vis);
+
+  new G4PVPlacement(nullptr, {0,0, fTargetZ * 0.5}, target_l, "target", world_l, false, 0, true);
+  auto HPGe_s = new G4Sphere("HPGe",
+                             fHPGeInnerR,
+                             fHPGeOuterR,
+                             0.0,
+                             360.0 * deg,
+                             0.0,
+                             90.0 * deg);
+
   auto HPGe_l = new G4LogicalVolume(HPGe_s, nist->FindOrBuildMaterial("G4_Ge"), "HPGe");
-  G4VisAttributes HPGe_vis;
-  HPGe_vis.SetForceSolid();
-  HPGe_vis.SetColor(0.5, 0.5, 0.5, 0.3);
+
+  auto HPGe_vis = new G4VisAttributes();
+  HPGe_vis->SetForceSolid();
+  HPGe_vis->SetColor(0.5, 0.5, 0.5, 0.3);
   HPGe_l->SetVisAttributes(HPGe_vis);
-  new G4PVPlacement(NULL, {}, HPGe_l, "HPGe", world_l, false, 0, true);
+
+  new G4PVPlacement(nullptr, {}, HPGe_l, "HPGe", world_l, false, 0, true);
 
   return world_p;
 }
