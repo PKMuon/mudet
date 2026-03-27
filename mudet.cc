@@ -28,6 +28,7 @@
 #include "ActionInitialization.hh"
 
 #include "G4RunManagerFactory.hh"
+#include "G4StepLimiterPhysics.hh"
 #include "G4SteppingVerbose.hh"
 #include "G4UImanager.hh"
 #include "QGSP_BERT_HP.hh"
@@ -65,6 +66,7 @@ int main(int argc,char** argv)
 
   // Physics list
   auto physicsList = new QGSP_BERT_HP;
+  physicsList->RegisterPhysics(new G4StepLimiterPhysics);
   physicsList->SetVerboseLevel(1);
   runManager->SetUserInitialization(physicsList);
 
