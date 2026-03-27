@@ -43,6 +43,7 @@ public:
   void AutoSave();
   void FillAndReset();
   void AddTrack(const G4Track *);
+  void AddVertex(const G4Track *);
   void AddStep(const G4Step *);
 
 private:

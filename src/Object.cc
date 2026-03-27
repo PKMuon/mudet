@@ -55,6 +55,24 @@ Track &Track::operator=(const G4Track &track)
   return *this;
 }
 
+Vertex &Vertex::operator=(const G4Track &track)
+{
+  auto position = track.GetPosition();
+  auto momentum = track.GetMomentum();
+
+  Id = track.GetTrackID();
+  Px = momentum.getX();
+  Py = momentum.getY();
+  Pz = momentum.getZ();
+  E = track.GetTotalEnergy();
+  X = position.getX();
+  Y = position.getY();
+  Z = position.getZ();
+  T = track.GetGlobalTime();
+
+  return *this;
+}
+
 Cuts &Cuts::operator=(const G4LogicalVolume &volume)
 {
   G4Material *material = volume.GetMaterial();

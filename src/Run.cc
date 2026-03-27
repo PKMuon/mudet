@@ -62,6 +62,7 @@ public:
   void PreFill();
   void Reset();
   void AddTrack(const G4Track *track);
+  void AddVertex(const G4Track *track);
   void AddStep(const G4Step *track);
   void SaveCuts();
 
@@ -69,6 +70,7 @@ private:
   TFile *fFile;
   TTree *fCuts;
   TClonesArray Tracks;
+  TClonesArray Vertices;
   TClonesArray Cuts;
   Double_t EnergyDeposit, NonIonizingEnergyDeposit;
 };
@@ -115,12 +117,17 @@ void Run::AddTrack(const G4Track *track)
   fManager->AddTrack(track);
 }
 
+void Run::AddVertex(const G4Track *track)
+{
+  fManager->AddVertex(track);
+}
+
 void Run::AddStep(const G4Step *step)
 {
   fManager->AddStep(step);
 }
 
-Run::Manager::Manager() : Tracks("Track"), Cuts("Cuts"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
+Run::Manager::Manager() : Tracks("Track"), Vertices("Vertex"), Cuts("Cuts"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
 {
   fFile = NULL;
   fCuts = NULL;
@@ -136,6 +143,7 @@ Run::Manager::~Manager()
 void Run::Manager::Branch(TTree *tree)
 {
   tree->Branch("Tracks", &Tracks);
+  tree->Branch("Vertices", &Vertices);
   tree->Branch("EnergyDeposit", &EnergyDeposit);
   tree->Branch("NonIonizingEnergyDeposit", &NonIonizingEnergyDeposit);
 
@@ -170,6 +178,7 @@ void Run::Manager::PreFill()
 void Run::Manager::Reset()
 {
   Tracks.Clear();
+  Vertices.Clear();
   EnergyDeposit = 0;
   NonIonizingEnergyDeposit = 0;
 }
@@ -179,8 +188,16 @@ void Run::Manager::AddTrack(const G4Track *track)
   *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track;
 }
 
+void Run::Manager::AddVertex(const G4Track *track)
+{
+  *(Vertex *)Vertices.ConstructedAt(Vertices.GetEntries()) = *track;
+}
+
 void Run::Manager::AddStep(const G4Step *step)
 {
+  if(step->GetTrack()->GetTrackID() == 1) {  // primary track
+    AddVertex(step->GetTrack());
+  }
   EnergyDeposit += step->GetTotalEnergyDeposit();
   NonIonizingEnergyDeposit += step->GetNonIonizingEnergyDeposit();
 }

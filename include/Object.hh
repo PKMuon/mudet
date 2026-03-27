@@ -51,6 +51,23 @@ public:
   ClassDef(Track, 1);
 };
 
+class Vertex : public TObject {
+public:
+  Vertex &operator=(const G4Track &);
+
+  Int_t Id;
+  Double_t Px;
+  Double_t Py;
+  Double_t Pz;
+  Double_t E;
+  Double_t X;
+  Double_t Y;
+  Double_t Z;
+  Double_t T;
+
+  ClassDef(Vertex, 1);
+};
+
 class Cuts : public TObject {
 public:
   Cuts &operator=(const G4LogicalVolume &);
