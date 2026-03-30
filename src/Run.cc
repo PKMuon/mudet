@@ -32,12 +32,14 @@
 #include "G4Track.hh"
 #include "G4Step.hh"
 #include "G4LogicalVolumeStore.hh"
+#include "G4SystemOfUnits.hh"
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
 #include <TROOT.h>
 #include <unistd.h>
 #include <filesystem>
+#include <unordered_set>
 
 namespace fs = std::filesystem;
 
@@ -59,7 +61,7 @@ public:
   ~Manager();
 
   void Branch(TTree *tree);
-  void PreFill();
+  Bool_t PreFill();
   void Reset();
   void AddTrack(const G4Track *track);
   void AddVertex(const G4Track *track);
@@ -73,6 +75,8 @@ private:
   TClonesArray Vertices;
   TClonesArray Cuts;
   Double_t EnergyDeposit, NonIonizingEnergyDeposit;
+  Double_t EnergyBackward;
+  std::unordered_set<Int_t> ForwardTrackIDSet;
 };
 
 Run::Run()
@@ -107,8 +111,7 @@ void Run::AutoSave()
 
 void Run::FillAndReset()
 {
-  fManager->PreFill();
-  fTree->Fill();
+  if(fManager->PreFill()) fTree->Fill();
   fManager->Reset();
 }
 
@@ -127,10 +130,11 @@ void Run::AddStep(const G4Step *step)
   fManager->AddStep(step);
 }
 
-Run::Manager::Manager() : Tracks("Track"), Vertices("Vertex"), Cuts("Cuts"), EnergyDeposit(0), NonIonizingEnergyDeposit(0)
+Run::Manager::Manager() : Tracks("Track"), Vertices("Vertex"), Cuts("Cuts")
 {
   fFile = NULL;
   fCuts = NULL;
+  Reset();
 }
 
 Run::Manager::~Manager()
@@ -143,7 +147,7 @@ Run::Manager::~Manager()
 void Run::Manager::Branch(TTree *tree)
 {
   tree->Branch("Tracks", &Tracks);
-  tree->Branch("Vertices", &Vertices);
+  //tree->Branch("Vertices", &Vertices);
   tree->Branch("EnergyDeposit", &EnergyDeposit);
   tree->Branch("NonIonizingEnergyDeposit", &NonIonizingEnergyDeposit);
 
@@ -153,26 +157,35 @@ void Run::Manager::Branch(TTree *tree)
   fCuts->Branch("Cuts", &Cuts);
 }
 
-void Run::Manager::PreFill()
+Bool_t Run::Manager::PreFill()
 {
+  if(EnergyBackward < 1.0 * MeV) return kFALSE;
+
   Int_t n = Tracks.GetEntries();
 
-  // Inplace index sort.
-  for(Int_t i = 0; i < n; ++i) {
-    auto track = (Track *)Tracks[i];
-    while(track->Id - 1 != i) {
-      if(track->Id <= 0 || track->Id > n) {
-        throw std::runtime_error("invalid track ID: " + std::to_string(track->Id));
-      }
-      if(((Track *)Tracks[track->Id - 1])->Id == track->Id) {
-        throw std::runtime_error("duplicate track ID: " + std::to_string(track->Id));
-      }
-      TObject *object = track;
-      std::swap(object, Tracks[track->Id - 1]);
-      track = (Track *)object;
-    }
-    Tracks[i] = track;
-  }
+  //// Inplace index sort.
+  //for(Int_t i = 0; i < n; ++i) {
+  //  auto track = (Track *)Tracks[i];
+  //  while(track->Id - 1 != i) {
+  //    if(track->Id <= 0 || track->Id > n) {
+  //      throw std::runtime_error("invalid track ID: " + std::to_string(track->Id));
+  //    }
+  //    if(((Track *)Tracks[track->Id - 1])->Id == track->Id) {
+  //      throw std::runtime_error("duplicate track ID: " + std::to_string(track->Id));
+  //    }
+  //    TObject *object = track;
+  //    std::swap(object, Tracks[track->Id - 1]);
+  //    track = (Track *)object;
+  //  }
+  //  Tracks[i] = track;
+  //}
+
+  std::vector<Track *> tracks;
+  for(Int_t i = 0; i < n; ++i) tracks.push_back((Track *)Tracks[i]);
+  sort(tracks.begin(), tracks.end(), [](Track *a, Track *b) { return a->Id < b->Id; });
+  for(Int_t i = 0; i < n; ++i) Tracks[i] = tracks[i];
+
+  return kTRUE;
 }
 
 void Run::Manager::Reset()
@@ -181,16 +194,24 @@ void Run::Manager::Reset()
   Vertices.Clear();
   EnergyDeposit = 0;
   NonIonizingEnergyDeposit = 0;
+  EnergyBackward = 0;
+  ForwardTrackIDSet = {0};  // The dummy mother for the primary track.
 }
 
 void Run::Manager::AddTrack(const G4Track *track)
 {
-  *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track;
+  auto momentum = track->GetMomentum();
+  if(momentum.z() >= 0) {
+    if(ForwardTrackIDSet.count(track->GetParentID())) ForwardTrackIDSet.insert(track->GetTrackID());
+  } else {
+    *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track;
+    if(ForwardTrackIDSet.count(track->GetParentID())) EnergyBackward += track->GetKineticEnergy();
+  }
 }
 
 void Run::Manager::AddVertex(const G4Track *track)
 {
-  *(Vertex *)Vertices.ConstructedAt(Vertices.GetEntries()) = *track;
+  //*(Vertex *)Vertices.ConstructedAt(Vertices.GetEntries()) = *track;
 }
 
 void Run::Manager::AddStep(const G4Step *step)
