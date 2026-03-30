@@ -37,8 +37,6 @@
 #include "QGSP_BERT_HP.hh"
 #include "Randomize.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 int main(int argc, char **argv)
 {
   // Detect interactive mode (if no arguments) and define UI session
@@ -107,5 +105,3 @@ int main(int argc, char **argv)
   delete visManager;
   delete runManager;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
