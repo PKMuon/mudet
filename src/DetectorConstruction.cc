@@ -28,10 +28,10 @@
 
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
+#include "G4Material.hh"
+#include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4NistManager.hh"
-#include "G4Material.hh"
 #include "G4UserLimits.hh"
 
 DetectorConstruction::DetectorConstruction()
@@ -39,13 +39,10 @@ DetectorConstruction::DetectorConstruction()
   fWorldX = 10 * cm;
   fWorldY = 10 * cm;
   fWorldZ = 10 * cm;
-  fSourcePosition = {0, 0, -fWorldZ * 0.5};
+  fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
 
-DetectorConstruction::~DetectorConstruction()
-{
-
-}
+DetectorConstruction::~DetectorConstruction() { }
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
@@ -62,7 +59,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   auto ground_s = new G4Box("ground", fWorldX * 0.5, fWorldY * 0.5, fWorldZ * 0.25);
   auto ground_l = new G4LogicalVolume(ground_s, CaCO3, "ground");
   ground_l->SetUserLimits(new G4UserLimits(fWorldZ * 0.01));
-  new G4PVPlacement(NULL, {0, 0, fWorldZ * 0.25}, ground_l, "ground", world_l, false, 0, true);
+  new G4PVPlacement(NULL, { 0, 0, fWorldZ * 0.25 }, ground_l, "ground", world_l, false, 0, true);
 
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
   return world_p;

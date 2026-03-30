@@ -25,21 +25,23 @@
 //
 
 #include "Run.hh"
-#include "Object.hh"
 
-#include "G4ios.hh"
-#include "G4Threading.hh"
-#include "G4Track.hh"
-#include "G4Step.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4SystemOfUnits.hh"
-#include <TFile.h>
-#include <TTree.h>
 #include <TClonesArray.h>
+#include <TFile.h>
 #include <TROOT.h>
+#include <TTree.h>
 #include <unistd.h>
+
 #include <filesystem>
 #include <unordered_set>
+
+#include "G4LogicalVolumeStore.hh"
+#include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
+#include "G4Track.hh"
+#include "G4ios.hh"
+#include "Object.hh"
 
 namespace fs = std::filesystem;
 
@@ -49,7 +51,7 @@ struct ROOTInitializer {
   ROOTInitializer() { ROOT::EnableThreadSafety(); }
 } rootInitializer [[maybe_unused]];
 
-}
+}  // namespace
 
 G4String Run::fDirName = "tree/" + std::to_string(getpid());
 G4String Run::fTreeName = "tree";
@@ -115,20 +117,11 @@ void Run::FillAndReset()
   fManager->Reset();
 }
 
-void Run::AddTrack(const G4Track *track)
-{
-  fManager->AddTrack(track);
-}
+void Run::AddTrack(const G4Track *track) { fManager->AddTrack(track); }
 
-void Run::AddVertex(const G4Track *track)
-{
-  fManager->AddVertex(track);
-}
+void Run::AddVertex(const G4Track *track) { fManager->AddVertex(track); }
 
-void Run::AddStep(const G4Step *step)
-{
-  fManager->AddStep(step);
-}
+void Run::AddStep(const G4Step *step) { fManager->AddStep(step); }
 
 Run::Manager::Manager() : Tracks("Track"), Vertices("Vertex"), Cuts("Cuts")
 {
@@ -195,7 +188,7 @@ void Run::Manager::Reset()
   EnergyDeposit = 0;
   NonIonizingEnergyDeposit = 0;
   EnergyBackward = 0;
-  ForwardTrackIDSet = {0};  // The dummy mother for the primary track.
+  ForwardTrackIDSet = { 0 };  // The dummy mother for the primary track.
 }
 
 void Run::Manager::AddTrack(const G4Track *track)

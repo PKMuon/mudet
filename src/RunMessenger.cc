@@ -25,10 +25,10 @@
 //
 
 #include "RunMessenger.hh"
-#include "PrimaryGeneratorAction.hh"
 
 #include "G4RunManager.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "PrimaryGeneratorAction.hh"
 
 class RunMessenger::Driver {
 public:
@@ -41,25 +41,15 @@ private:
   G4UIcmdWithADoubleAndUnit *fSetTotalEnergyCmd;
 };
 
-RunMessenger::RunMessenger()
-{
-  fDriver = new Driver(this);
-}
+RunMessenger::RunMessenger() { fDriver = new Driver(this); }
 
-RunMessenger::~RunMessenger()
-{
-  delete fDriver;
-}
+RunMessenger::~RunMessenger() { delete fDriver; }
 
-void RunMessenger::SetNewValue(G4UIcommand *cmd, G4String val)
-{
-  fDriver->SetNewValue(cmd, val);
-}
+void RunMessenger::SetNewValue(G4UIcommand *cmd, G4String val) { fDriver->SetNewValue(cmd, val); }
 
 RunMessenger::Driver::Driver(RunMessenger *messenger)
 {
-  fPrimaryGeneratorAction = (PrimaryGeneratorAction *)
-    G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+  fPrimaryGeneratorAction = (PrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
   fSetTotalEnergyCmd = new G4UIcmdWithADoubleAndUnit("/gun/totalEnergy", messenger);
   fSetTotalEnergyCmd->SetGuidance("Set total energy.");
@@ -68,14 +58,9 @@ RunMessenger::Driver::Driver(RunMessenger *messenger)
   fSetTotalEnergyCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
-RunMessenger::Driver::~Driver()
-{
-  delete fSetTotalEnergyCmd;
-}
+RunMessenger::Driver::~Driver() { delete fSetTotalEnergyCmd; }
 
 void RunMessenger::Driver::SetNewValue(G4UIcommand *cmd, G4String val)
 {
-  if(cmd == fSetTotalEnergyCmd) {
-    fPrimaryGeneratorAction->SetTotalEnergy(fSetTotalEnergyCmd->GetNewDoubleValue(val));
-  }
+  if(cmd == fSetTotalEnergyCmd) { fPrimaryGeneratorAction->SetTotalEnergy(fSetTotalEnergyCmd->GetNewDoubleValue(val)); }
 }

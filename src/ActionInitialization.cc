@@ -25,18 +25,16 @@
 //
 
 #include "ActionInitialization.hh"
+
+#include "EventAction.hh"
+#include "G4AutoDelete.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
-#include "EventAction.hh"
+#include "RunMessenger.hh"
 #include "SteppingAction.hh"
 #include "TrackingAction.hh"
-#include "RunMessenger.hh"
-#include "G4AutoDelete.hh"
 
-void ActionInitialization::BuildForMaster() const
-{
-
-}
+void ActionInitialization::BuildForMaster() const { }
 
 void ActionInitialization::Build() const
 {

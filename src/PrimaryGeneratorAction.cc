@@ -25,35 +25,28 @@
 //
 
 #include "PrimaryGeneratorAction.hh"
-#include "DetectorConstruction.hh"
 
-#include "G4RunManager.hh"
+#include "DetectorConstruction.hh"
 #include "G4ParticleGun.hh"
+#include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
-  auto detectorConstruction = (DetectorConstruction *)
-    G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  auto detectorConstruction = (DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
   G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
 
   fParticleGun = new G4ParticleGun(1);
   G4ParticleDefinition *particle = particleTable->FindParticle("mu-");
   fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection({0, 0, 1});
+  fParticleGun->SetParticleMomentumDirection({ 0, 0, 1 });
   fParticleGun->SetParticleEnergy(1 * GeV);
   fParticleGun->SetParticlePosition(detectorConstruction->GetSourcePosition());
 }
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
-{
-  delete fParticleGun;
-}
+PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event *event)
-{
-  fParticleGun->GeneratePrimaryVertex(event);
-}
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event *event) { fParticleGun->GeneratePrimaryVertex(event); }
 
 void PrimaryGeneratorAction::SetTotalEnergy(G4double energy)
 {

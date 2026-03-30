@@ -25,25 +25,14 @@
 //
 
 #include "EventAction.hh"
-#include "RunAction.hh"
+
 #include "Run.hh"
+#include "RunAction.hh"
 
-EventAction::EventAction(RunAction *runAction) : fRunAction(runAction)
-{
-  fRun = fRunAction->GetRun();
-}
+EventAction::EventAction(RunAction *runAction) : fRunAction(runAction) { fRun = fRunAction->GetRun(); }
 
-EventAction::~EventAction()
-{
+EventAction::~EventAction() { }
 
-}
+void EventAction::BeginOfEventAction([[maybe_unused]] const G4Event *event) { }
 
-void EventAction::BeginOfEventAction([[maybe_unused]] const G4Event *event)
-{
-
-}
-
-void EventAction::EndOfEventAction([[maybe_unused]] const G4Event *event)
-{
-  fRun->FillAndReset();
-}
+void EventAction::EndOfEventAction([[maybe_unused]] const G4Event *event) { fRun->FillAndReset(); }
