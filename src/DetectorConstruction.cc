@@ -47,7 +47,7 @@ DetectorConstruction::DetectorConstruction()
   fTargetY = 2 * cm;
   fTargetZ = 2 * cm;
   fHPGeInnerR = 1.5 * cm;
-  fHPGeOuterR = 5.5 * cm;  // 4 cm thick
+  fHPGeOuterR = 3.5 * cm;  // 2 cm thick
   fHPGeLength = 15 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
