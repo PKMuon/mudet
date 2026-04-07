@@ -47,7 +47,7 @@ DetectorConstruction::DetectorConstruction()
   fTargetY = 2 * cm;
   fTargetZ = 2 * cm;
   fHPGeInnerR = 1.5 * cm;
-  fHPGeOuterR = 15 * cm;
+  fHPGeOuterR = 5.5 * cm;  // 4 cm thick
   fHPGeLength = 15 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
@@ -126,7 +126,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   auto world_p = new G4PVPlacement(NULL, {}, world_l, "world", NULL, false, 0, true);
 
   auto target_s = new G4Box("target", fTargetX * 0.5, fTargetY * 0.5, fTargetZ * 0.5);
-  auto target_l = new G4LogicalVolume(target_s, GetTargetMaterial(), "target");
+  //auto target_l = new G4LogicalVolume(target_s, GetTargetMaterial(), "target");
+  auto target_l = new G4LogicalVolume(target_s, nist->FindOrBuildMaterial("G4_WATER"), "target");
   target_l->SetUserLimits(new G4UserLimits(fTargetZ * 0.01));
   G4VisAttributes target_vis;
   target_vis.SetForceSolid();
