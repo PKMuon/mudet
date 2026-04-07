@@ -46,9 +46,9 @@ DetectorConstruction::DetectorConstruction()
   fTargetX = 2 * cm;
   fTargetY = 2 * cm;
   fTargetZ = 2 * cm;
-  fHPGeInnerR = 3 * cm;
-  fHPGeOuterR = 13 * cm;
-  fHPGeLength = 0 * cm;
+  fHPGeInnerR = 1.5 * cm;
+  fHPGeOuterR = 15 * cm;
+  fHPGeLength = 15 * cm;
   fSourcePosition = { 0, 0, -fWorldZ * 0.5 };
 }
 
@@ -134,17 +134,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   target_vis->SetColor(1.0, 0.0, 0.0, 0.8);
   target_l->SetVisAttributes(target_vis);
 
-  new G4PVPlacement(nullptr, {0,0, fTargetZ * 0.5}, target_l, "target", world_l, false, 0, true);
-  auto HPGe_s = new G4Sphere("HPGe",
-                             fHPGeInnerR,
-                             fHPGeOuterR,
-                             0.0,
-                             360.0 * deg,
-                             0.0,
-                             90.0 * deg);
-
+  new G4PVPlacement(nullptr, { 0, 0, fTargetZ * 0.5 }, target_l, "target", world_l, false, 0, true);
+  auto HPGe_s = new G4Sphere("HPGe", fHPGeInnerR, fHPGeOuterR, 0.0, 360.0 * deg, 0.0, 90.0 * deg);
   auto HPGe_l = new G4LogicalVolume(HPGe_s, nist->FindOrBuildMaterial("G4_Ge"), "HPGe");
-
   auto HPGe_vis = new G4VisAttributes();
   HPGe_vis->SetForceSolid();
   HPGe_vis->SetColor(0.5, 0.5, 0.5, 0.3);
