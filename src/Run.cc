@@ -65,20 +65,22 @@ public:
   void Branch(TTree *tree);
   Bool_t PreFill();
   void Reset();
+  void InitTrack(const G4Track *track);
   void AddTrack(const G4Track *track);
   void AddVertex(const G4Track *track);
   void AddStep(const G4Step *track);
   void SaveCuts();
 
 private:
+  std::unordered_set<Int_t> fRecordedTrackIDSet;
+  bool currentTrackRecorded;
+
   TFile *fFile;
   TTree *fCuts;
   TClonesArray Tracks;
   TClonesArray Vertices;
   TClonesArray Cuts;
   Double_t EnergyDeposit, NonIonizingEnergyDeposit;
-  Double_t EnergyBackward;
-  std::unordered_set<Int_t> ForwardTrackIDSet;
 };
 
 Run::Run()
@@ -117,6 +119,8 @@ void Run::FillAndReset()
   fManager->Reset();
 }
 
+void Run::InitTrack(const G4Track *track) { fManager->InitTrack(track); }
+
 void Run::AddTrack(const G4Track *track) { fManager->AddTrack(track); }
 
 void Run::AddVertex(const G4Track *track) { fManager->AddVertex(track); }
@@ -152,9 +156,8 @@ void Run::Manager::Branch(TTree *tree)
 
 Bool_t Run::Manager::PreFill()
 {
-  if(EnergyBackward < 1.0 * MeV) return kFALSE;
-
   Int_t n = Tracks.GetEntries();
+  if(!n) return kFALSE;
 
   //// Inplace index sort.
   //for(Int_t i = 0; i < n; ++i) {
@@ -187,19 +190,22 @@ void Run::Manager::Reset()
   Vertices.Clear();
   EnergyDeposit = 0;
   NonIonizingEnergyDeposit = 0;
-  EnergyBackward = 0;
-  ForwardTrackIDSet = { 0 };  // The dummy mother for the primary track.
+  fRecordedTrackIDSet.clear();
+}
+
+void Run::Manager::InitTrack(const G4Track *track)
+{
+  if(fRecordedTrackIDSet.count(track->GetParentID())) {
+    fRecordedTrackIDSet.insert(track->GetTrackID());
+    currentTrackRecorded = true;
+  } else {
+    currentTrackRecorded = false;
+  }
 }
 
 void Run::Manager::AddTrack(const G4Track *track)
 {
-  auto momentum = track->GetMomentum();
-  if(momentum.z() >= 0) {
-    if(ForwardTrackIDSet.count(track->GetParentID())) ForwardTrackIDSet.insert(track->GetTrackID());
-  } else {
-    *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track;
-    if(ForwardTrackIDSet.count(track->GetParentID())) EnergyBackward += track->GetKineticEnergy();
-  }
+  *(Track *)Tracks.ConstructedAt(Tracks.GetEntries()) = *track;
 }
 
 void Run::Manager::AddVertex(const G4Track *track)
@@ -209,11 +215,20 @@ void Run::Manager::AddVertex(const G4Track *track)
 
 void Run::Manager::AddStep(const G4Step *step)
 {
-  if(step->GetTrack()->GetTrackID() == 1) {  // primary track
-    AddVertex(step->GetTrack());
+  const G4Track *track = step->GetTrack();
+  if(track->GetTrackID() == 1) {  // primary track
+    AddVertex(track);
   }
   EnergyDeposit += step->GetTotalEnergyDeposit();
   NonIonizingEnergyDeposit += step->GetNonIonizingEnergyDeposit();
+
+  if(currentTrackRecorded) return;
+  const auto &pre = step->GetPreStepPoint()->GetPosition(), &post = step->GetPostStepPoint()->GetPosition();
+  if(pre.z() >= 0 && post.z() < 0) {
+    fRecordedTrackIDSet.insert(track->GetTrackID());
+    currentTrackRecorded = true;
+    AddTrack(track);
+  }
 }
 
 void Run::Manager::SaveCuts()

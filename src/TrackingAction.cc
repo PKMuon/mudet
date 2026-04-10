@@ -33,6 +33,6 @@ TrackingAction::TrackingAction(EventAction *eventAction) : fEventAction(eventAct
 
 TrackingAction::~TrackingAction() { }
 
-void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track) { fRun->AddTrack(track); }
+void TrackingAction::PreUserTrackingAction([[maybe_unused]] const G4Track *track) { fRun->InitTrack(track); }
 
 void TrackingAction::PostUserTrackingAction([[maybe_unused]] const G4Track *track) { }
