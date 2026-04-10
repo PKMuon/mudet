@@ -227,7 +227,7 @@ void Run::Manager::AddStep(const G4Step *step)
   if(pre.z() >= 0 && post.z() < 0) {
     fRecordedTrackIDSet.insert(track->GetTrackID());
     currentTrackRecorded = true;
-    AddTrack(track);
+    if(track->GetMomentum().z() < 0) AddTrack(track);
   }
 }
 
