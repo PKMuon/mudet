@@ -36,6 +36,5 @@ filename = os.path.join(dirname, basename)
 exec(open(filename).read())
 
 # Add include paths for this project.
-for dirpath, _, _ in os.walk(dirname_org):
-    if os.path.basename(dirpath) == 'include':
-        flags.append('-I' + dirpath)
+flags.append('-I' + 'include')
+flags.append('-isystem' + 'cry/src')

@@ -37,6 +37,23 @@ class G4LogicalVolume;
 class G4Nucleus;
 class G4VParticleChange;
 
+class Event : public TObject {
+public:
+  Int_t Pid;
+  Double_t Px;
+  Double_t Py;
+  Double_t Pz;
+  Double_t E;
+  Double_t X;
+  Double_t Y;
+  Double_t Z;
+  Double_t T;
+
+  void Reset() { memset(&Pid, 0, (char *)&T - (char *)&Pid + sizeof T); }
+
+  ClassDef(Event, 1);
+};
+
 class Edep : public TObject {
 public:
   Edep &operator=(std::pair<Int_t, Double_t>);

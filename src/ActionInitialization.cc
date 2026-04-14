@@ -27,10 +27,8 @@
 #include "ActionInitialization.hh"
 
 #include "EventAction.hh"
-#include "G4AutoDelete.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
-#include "RunMessenger.hh"
 #include "SteppingAction.hh"
 #include "TrackingAction.hh"
 
@@ -38,17 +36,14 @@ void ActionInitialization::BuildForMaster() const { }
 
 void ActionInitialization::Build() const
 {
-  SetUserAction(new PrimaryGeneratorAction);
-
   auto runAction = new RunAction;
   SetUserAction(runAction);
+
+  SetUserAction(new PrimaryGeneratorAction(runAction->GetRun(), ""));
 
   auto eventAction = new EventAction(runAction);
   SetUserAction(eventAction);
 
   SetUserAction(new SteppingAction(eventAction));
   SetUserAction(new TrackingAction(eventAction));
-
-  auto runMessenger = new RunMessenger;
-  G4AutoDelete::Register(runMessenger);
 }

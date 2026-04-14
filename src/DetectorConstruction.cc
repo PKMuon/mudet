@@ -33,10 +33,12 @@
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
+#include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Tubs.hh"
 #include "G4UserLimits.hh"
 #include "G4VisAttributes.hh"
+#include "PrimaryGeneratorAction.hh"
 
 DetectorConstruction::DetectorConstruction()
 {
@@ -142,6 +144,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   HPGe_vis.SetColor(0.5, 0.5, 0.5, 0.3);
   HPGe_l->SetVisAttributes(HPGe_vis);
   new G4PVPlacement(NULL, {}, HPGe_l, "HPGe", world_l, false, 0, true);
+
+  ((PrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction())->Initialize(this);
 
   return world_p;
 }

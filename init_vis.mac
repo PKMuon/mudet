@@ -13,3 +13,5 @@
 #
 # Visualization setting
 /control/execute vis.mac
+#
+/control/execute Cry.mac

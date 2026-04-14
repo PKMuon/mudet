@@ -1,56 +1,190 @@
+//******************************************************************************
+// PrimaryGeneratorAction.cc
 //
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
+// 1.00 JMV, LLNL, Jan-2007:  First version.
+//******************************************************************************
 //
 
 #include "PrimaryGeneratorAction.hh"
 
+#include <iomanip>
+
 #include "DetectorConstruction.hh"
-#include "G4ParticleGun.hh"
-#include "G4RunManager.hh"
+#include "Object.hh"
+#include "Run.hh"
+using namespace std;
+
+#include "G4Event.hh"
 #include "G4SystemOfUnits.hh"
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
-{
-  auto detectorConstruction = (DetectorConstruction *)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-  G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
+#ifndef CRY_DATA
+#define CRY_DATA "../data"
+#endif /* CRY_DATA */
 
-  fParticleGun = new G4ParticleGun(1);
-  G4ParticleDefinition *particle = particleTable->FindParticle("mu-");
-  fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection({ 0, 0, 1 });
-  fParticleGun->SetParticleEnergy(4 * MeV);
-  fParticleGun->SetParticlePosition(detectorConstruction->GetSourcePosition());
+//----------------------------------------------------------------------------//
+PrimaryGeneratorAction::PrimaryGeneratorAction(Run *run, const char *inputfile)
+{
+  // define a particle gun
+  particleGun = new G4ParticleGun();
+
+  // Read the cry input file
+  std::ifstream inputFile;
+  inputFile.open(inputfile, std::ios::in);
+  char buffer[1000];
+
+  if(inputFile.fail()) {
+    if(*inputfile != 0) {  //....only complain if a filename was given
+      G4cout << "PrimaryGeneratorAction: Failed to open CRY input file= " << inputfile << G4endl;
+    }
+    InputState = -1;
+  } else {
+    std::string setupString("");
+    while(!inputFile.getline(buffer, 1000).eof()) {
+      setupString.append(buffer);
+      setupString.append(" ");
+    }
+
+    CRYSetup *setup = new CRYSetup(setupString, CRY_DATA);
+
+    gen = new CRYGenerator(setup);
+
+    // set random number generator
+    RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(), &CLHEP::HepRandomEngine::flat);
+    setup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
+    InputState = 0;
+  }
+  // create a vector to store the CRY particle properties
+  vect = new std::vector<CRYParticle *>;
+
+  // Create the table containing all particle names
+  particleTable = G4ParticleTable::GetParticleTable();
+
+  // Create the messenger file
+  gunMessenger = new PrimaryGeneratorMessenger(this);
+
+  fNPrimary = -1;
+  fDetectorMinZ = NAN;
+  fDetectorHalfX = NAN;
+  fDetectorHalfY = NAN;
+  fRun = run;
 }
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
+//----------------------------------------------------------------------------//
+PrimaryGeneratorAction::~PrimaryGeneratorAction() { }
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event *event) { fParticleGun->GeneratePrimaryVertex(event); }
-
-void PrimaryGeneratorAction::SetTotalEnergy(G4double energy)
+//----------------------------------------------------------------------------//
+void PrimaryGeneratorAction::Initialize(const DetectorConstruction *detectorConstruction)
 {
-  energy -= fParticleGun->GetParticleDefinition()->GetPDGMass();
-  if(energy < 0) throw std::invalid_argument("energy less than mass");
-  fParticleGun->SetParticleEnergy(energy);
+  fDetectorMinZ = detectorConstruction->GetDetectorMinZ();
+  fDetectorHalfX = detectorConstruction->GetDetectorHalfX();
+  fDetectorHalfY = detectorConstruction->GetDetectorHalfY();
+}
+
+//----------------------------------------------------------------------------//
+void PrimaryGeneratorAction::InputCRY() { InputState = 1; }
+
+//----------------------------------------------------------------------------//
+void PrimaryGeneratorAction::UpdateCRY(std::string *MessInput)
+{
+  CRYSetup *setup = new CRYSetup(*MessInput, CRY_DATA);
+
+  gen = new CRYGenerator(setup);
+
+  // set random number generator
+  RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(), &CLHEP::HepRandomEngine::flat);
+  setup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
+  InputState = 0;
+}
+
+//----------------------------------------------------------------------------//
+void PrimaryGeneratorAction::CRYFromFile(G4String newValue)
+{
+  // Read the cry input file
+  std::ifstream inputFile;
+  inputFile.open(newValue, std::ios::in);
+  char buffer[1000];
+
+  if(inputFile.fail()) {
+    G4cout << "Failed to open input file " << newValue << G4endl;
+    G4cout << "Make sure to define the cry library on the command line" << G4endl;
+    InputState = -1;
+  } else {
+    std::string setupString("");
+    while(!inputFile.getline(buffer, 1000).eof()) {
+      setupString.append(buffer);
+      setupString.append(" ");
+    }
+
+    CRYSetup *setup = new CRYSetup(setupString, CRY_DATA);
+
+    gen = new CRYGenerator(setup);
+
+    // set random number generator
+    RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(), &CLHEP::HepRandomEngine::flat);
+    setup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
+    InputState = 0;
+  }
+}
+
+//----------------------------------------------------------------------------//
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
+{
+  if(InputState != 0) {
+    G4String *str = new G4String("CRY library was not successfully initialized");
+    //G4Exception(*str);
+    G4Exception("PrimaryGeneratorAction", "1", RunMustBeAborted, *str);
+  }
+  vect->clear();
+  gen->genEvent(vect);
+
+  ////....debug output
+  //G4cout << "\nEvent=" << anEvent->GetEventID() << " "
+  //  << "CRY generated nparticles=" << vect->size()
+  //  << G4endl;
+
+  Event *event = fRun->GetEvent();
+  event->Reset();
+  if(__builtin_expect(vect->empty(), false)) return;
+  fNPrimary = 0;
+  for(unsigned j = 0, j0 = G4UniformRand() * vect->size(); j < vect->size(); j++) {
+    ////....debug output
+    //G4String particleName = CRYUtils::partName((*vect)[j]->id());
+    //cout << scientific << setprecision(2) << "  " << setw(12) << left << particleName
+    //  << "\tC=" << (*vect)[j]->charge()
+    //  << "\tE[MeV]=" << (*vect)[j]->ke()
+    //  << "\tX[m]=" << showpos << G4ThreeVector((*vect)[j]->x(), (*vect)[j]->y(), (*vect)[j]->z())
+    //  << "\tA=" << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), (*vect)[j]->w()) << noshowpos
+    //  << "\tT[s]=" << (*vect)[j]->t()
+    //  << endl;
+
+    if(j == j0) {  // Keep only one primary to avoid bad spatial normalization.
+      particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
+      particleGun->SetParticleEnergy((*vect)[j]->ke() * MeV);
+      //particleGun->SetParticlePosition(G4ThreeVector((*vect)[j]->x()*m, (*vect)[j]->y()*m, (*vect)[j]->z()*m +
+      //fDetectorMinZ));
+      particleGun->SetParticlePosition({
+          fDetectorHalfX * (2 * G4UniformRand() - 1),
+          fDetectorHalfY * (2 * G4UniformRand() - 1),
+          fDetectorMinZ,
+      });
+      particleGun->SetParticleMomentumDirection(G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), -(*vect)[j]->w()));
+      //particleGun->SetParticleTime((*vect)[j]->t() * s);
+      particleGun->SetParticleTime(0);
+      particleGun->GeneratePrimaryVertex(anEvent);
+      ++fNPrimary;
+      G4double mass = particleGun->GetParticleDefinition()->GetPDGMass(), e = particleGun->GetParticleEnergy() + mass;
+      event->Pid = particleGun->GetParticleDefinition()->GetPDGEncoding();
+      G4ThreeVector v = sqrt(e * e - mass * mass) * particleGun->GetParticleMomentumDirection();
+      event->Px = v.x();
+      event->Py = v.y();
+      event->Pz = v.z();
+      event->E = e;
+      v = particleGun->GetParticlePosition();
+      event->X = v.x();
+      event->Y = v.y();
+      event->Z = v.z();
+      event->T = particleGun->GetParticleTime();
+    }
+    delete(*vect)[j];
+  }
 }

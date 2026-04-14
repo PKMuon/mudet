@@ -69,6 +69,7 @@ public:
   void AddTrack(const G4Track *track);
   void AddStep(const G4Step *track);
   void AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *change);
+  Event *GetEvent() { return &Event; }
   void SaveCuts();
 
 private:
@@ -78,6 +79,7 @@ private:
   TClonesArray Tracks;
   TClonesArray Cuts;
   TClonesArray MuonCaptures;
+  Event Event;
   G4LogicalVolume *fScoringVolume;
   std::map<G4int, G4double> fEnergyDeposit;
 };
@@ -134,6 +136,8 @@ void Run::AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *chan
   fManager->AddMuonCapture(nucleus, change);
 }
 
+Event *Run::GetEvent() { return fManager->GetEvent(); }
+
 Run::Manager::Manager() : Edeps("Edep"), Tracks("Track"), Cuts("Cuts"), MuonCaptures("MuonCapture")
 {
   fFile = NULL;
@@ -153,6 +157,7 @@ void Run::Manager::Branch(TTree *tree)
   tree->Branch("Edeps", &Edeps);
   tree->Branch("Tracks", &Tracks);
   tree->Branch("MuonCaptures", &MuonCaptures);
+  tree->Branch("Event", &Event);
 
   fFile = tree->GetCurrentFile();
   fFile->cd();

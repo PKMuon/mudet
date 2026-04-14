@@ -1,47 +1,57 @@
+//******************************************************************************
+// PrimaryGeneratorAction.hh
 //
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
+// This class is a class derived from G4VUserPrimaryGeneratorAction for
+// constructing the process used to generate incident particles.
 //
-
+// 1.00 JMV, LLNL, JAN-2007:  First version.
+//******************************************************************************
+//
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
+#include "CRYGenerator.h"
+#include "CRYParticle.h"
+#include "CRYSetup.h"
+#include "CRYUtils.h"
+#include "G4DataVector.hh"
+#include "G4ParticleGun.hh"
+#include "G4ParticleTable.hh"
+#include "G4ThreeVector.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorMessenger.hh"
+#include "RNGWrapper.hh"
+#include "Randomize.hh"
 #include "globals.hh"
+#include "vector"
 
-class G4ParticleGun;
+class G4Event;
+class DetectorConstruction;
+class Run;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 public:
-  PrimaryGeneratorAction();
-  ~PrimaryGeneratorAction() override;
+  PrimaryGeneratorAction(Run *run, const char *filename);
+  ~PrimaryGeneratorAction();
+  void Initialize(const DetectorConstruction *);
 
-  void GeneratePrimaries(G4Event *) override;
-  void SetTotalEnergy(G4double);
+public:
+  void GeneratePrimaries(G4Event *anEvent);
+  G4bool IsPrimary(G4int trackID) const { return trackID > 0 && trackID <= fNPrimary; }
+  void InputCRY();
+  void UpdateCRY(std::string *MessInput);
+  void CRYFromFile(G4String newValue);
 
 private:
-  G4ParticleGun *fParticleGun;
+  std::vector<CRYParticle *> *vect;  // vector of generated particles
+  G4ParticleTable *particleTable;
+  G4ParticleGun *particleGun;
+  CRYGenerator *gen;
+  PrimaryGeneratorMessenger *gunMessenger;
+  G4int InputState;
+  G4int fNPrimary;
+  G4double fDetectorMinZ, fDetectorHalfX, fDetectorHalfY;
+  Run *fRun;
 };
 
 #endif

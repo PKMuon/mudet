@@ -38,6 +38,9 @@ public:
 
   G4VPhysicalVolume *Construct() override;
   G4ThreeVector GetSourcePosition() const { return fSourcePosition; }
+  G4double GetDetectorMinZ() const { return -fHPGeLength * 0.5; }
+  G4double GetDetectorHalfX() const { return fHPGeOuterR; }
+  G4double GetDetectorHalfY() const { return fHPGeOuterR; }
 
 private:
   G4double fWorldX, fWorldY, fWorldZ;
