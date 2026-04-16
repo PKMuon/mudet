@@ -142,8 +142,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
   //  << "CRY generated nparticles=" << vect->size()
   //  << G4endl;
 
-  Event *event = fRun->GetEvent();
-  event->Reset();
+  Event event;
+  event.Reset();
   if(__builtin_expect(vect->empty(), false)) return;
   fNPrimary = 0;
   for(unsigned j = 0, j0 = G4UniformRand() * vect->size(); j < vect->size(); j++) {
@@ -173,18 +173,19 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
       particleGun->GeneratePrimaryVertex(anEvent);
       ++fNPrimary;
       G4double mass = particleGun->GetParticleDefinition()->GetPDGMass(), e = particleGun->GetParticleEnergy() + mass;
-      event->Pid = particleGun->GetParticleDefinition()->GetPDGEncoding();
+      event.Pid = particleGun->GetParticleDefinition()->GetPDGEncoding();
       G4ThreeVector v = sqrt(e * e - mass * mass) * particleGun->GetParticleMomentumDirection();
-      event->Px = v.x();
-      event->Py = v.y();
-      event->Pz = v.z();
-      event->E = e;
+      event.Px = v.x();
+      event.Py = v.y();
+      event.Pz = v.z();
+      event.E = e;
       v = particleGun->GetParticlePosition();
-      event->X = v.x();
-      event->Y = v.y();
-      event->Z = v.z();
-      event->T = particleGun->GetParticleTime();
+      event.X = v.x();
+      event.Y = v.y();
+      event.Z = v.z();
+      event.T = particleGun->GetParticleTime();
     }
     delete(*vect)[j];
   }
+  fRun->AddEvent(&event);
 }

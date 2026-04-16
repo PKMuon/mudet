@@ -27,7 +27,6 @@
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
-#include "G4ThreeVector.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
 
@@ -37,16 +36,15 @@ public:
   ~DetectorConstruction() override;
 
   G4VPhysicalVolume *Construct() override;
-  G4ThreeVector GetSourcePosition() const { return fSourcePosition; }
-  G4double GetDetectorMinZ() const { return -fHPGeLength * 0.5; }
-  G4double GetDetectorHalfX() const { return fHPGeOuterR; }
-  G4double GetDetectorHalfY() const { return fHPGeOuterR; }
+  G4double GetDetectorMinZ() const { return -(fHPGeLength * 0.5 + fBlockZ); }
+  G4double GetDetectorHalfX() const { return fmax(fHPGeOuterR, fBlockX * 0.5); }
+  G4double GetDetectorHalfY() const { return fmax(fHPGeOuterR, fBlockY * 0.5); }
 
 private:
   G4double fWorldX, fWorldY, fWorldZ;
   G4double fTargetX, fTargetY, fTargetZ;
   G4double fHPGeInnerR, fHPGeOuterR, fHPGeLength;
-  G4ThreeVector fSourcePosition;
+  G4double fBlockX, fBlockY, fBlockZ;
 };
 
 #endif

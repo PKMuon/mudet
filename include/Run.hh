@@ -49,7 +49,7 @@ public:
   void AddTrack(const G4Track *);
   void AddStep(const G4Step *);
   void AddMuonCapture(const G4Nucleus *, const G4VParticleChange *);
-  Event *GetEvent();
+  void AddEvent(const Event *);
 
 private:
   class Manager;

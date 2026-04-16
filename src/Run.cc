@@ -62,14 +62,15 @@ public:
   ~Manager();
 
   G4LogicalVolume *GetScoringVolume();
+  G4LogicalVolume *GetTargetVolume();
 
   void Branch(TTree *tree);
-  void PreFill();
+  bool PreFill();
   void Reset();
   void AddTrack(const G4Track *track);
   void AddStep(const G4Step *track);
   void AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *change);
-  Event *GetEvent() { return &Event; }
+  void AddEvent(const Event *event);
   void SaveCuts();
 
 private:
@@ -79,8 +80,8 @@ private:
   TClonesArray Tracks;
   TClonesArray Cuts;
   TClonesArray MuonCaptures;
-  Event Event;
-  G4LogicalVolume *fScoringVolume;
+  TClonesArray Events;
+  G4LogicalVolume *fScoringVolume, *fTargetVolume;
   std::map<G4int, G4double> fEnergyDeposit;
 };
 
@@ -88,6 +89,12 @@ G4LogicalVolume *Run::Manager::GetScoringVolume()
 {
   if(!fScoringVolume) fScoringVolume = G4LogicalVolumeStore::GetInstance()->GetVolume("HPGe");
   return fScoringVolume;
+}
+
+G4LogicalVolume *Run::Manager::GetTargetVolume()
+{
+  if(!fTargetVolume) fTargetVolume = G4LogicalVolumeStore::GetInstance()->GetVolume("target");
+  return fTargetVolume;
 }
 
 Run::Run()
@@ -122,8 +129,7 @@ void Run::AutoSave()
 
 void Run::FillAndReset()
 {
-  fManager->PreFill();
-  fTree->Fill();
+  if(fManager->PreFill()) fTree->Fill();
   fManager->Reset();
 }
 
@@ -136,9 +142,9 @@ void Run::AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *chan
   fManager->AddMuonCapture(nucleus, change);
 }
 
-Event *Run::GetEvent() { return fManager->GetEvent(); }
+void Run::AddEvent(const Event *event) { fManager->AddEvent(event); }
 
-Run::Manager::Manager() : Edeps("Edep"), Tracks("Track"), Cuts("Cuts"), MuonCaptures("MuonCapture")
+Run::Manager::Manager() : Edeps("Edep"), Tracks("Track"), Cuts("Cuts"), MuonCaptures("MuonCapture"), Events("Event")
 {
   fFile = NULL;
   fCuts = NULL;
@@ -157,7 +163,7 @@ void Run::Manager::Branch(TTree *tree)
   tree->Branch("Edeps", &Edeps);
   tree->Branch("Tracks", &Tracks);
   tree->Branch("MuonCaptures", &MuonCaptures);
-  tree->Branch("Event", &Event);
+  tree->Branch("Events", &Events);
 
   fFile = tree->GetCurrentFile();
   fFile->cd();
@@ -165,7 +171,7 @@ void Run::Manager::Branch(TTree *tree)
   fCuts->Branch("Cuts", &Cuts);
 }
 
-void Run::Manager::PreFill()
+bool Run::Manager::PreFill()
 {
   Int_t n = Tracks.GetEntries();
 
@@ -198,6 +204,8 @@ void Run::Manager::PreFill()
   }
   //G4cout << "Debug: Total energy deposit: " << edepSum / CLHEP::MeV << " MeV" << G4endl;
   fEnergyDeposit.clear();
+
+  return Events.GetEntries() > 1;  // [NOTE] Requires at least one incident particle to the target.
 }
 
 void Run::Manager::Reset()
@@ -205,6 +213,7 @@ void Run::Manager::Reset()
   Edeps.Clear();
   Tracks.Clear();
   MuonCaptures.Clear();
+  Events.Clear();
 }
 
 void Run::Manager::AddTrack(const G4Track *track)
@@ -220,6 +229,19 @@ void Run::Manager::AddTrack(const G4Track *track)
 void Run::Manager::AddStep(const G4Step *step)
 {
   G4LogicalVolume *volume = step->GetTrack()->GetVolume()->GetLogicalVolume();
+  if(volume == GetTargetVolume() && step->IsFirstStepInVolume()) {
+    Event event;
+    event.Pid = step->GetTrack()->GetParticleDefinition()->GetPDGEncoding();
+    event.Px = step->GetTrack()->GetMomentum().x();
+    event.Py = step->GetTrack()->GetMomentum().y();
+    event.Pz = step->GetTrack()->GetMomentum().z();
+    event.E = step->GetTrack()->GetTotalEnergy();
+    event.X = step->GetTrack()->GetPosition().x();
+    event.Y = step->GetTrack()->GetPosition().y();
+    event.Z = step->GetTrack()->GetPosition().z();
+    event.T = step->GetTrack()->GetGlobalTime();
+    AddEvent(&event);
+  }
   if(volume != GetScoringVolume()) return;
   fEnergyDeposit[step->GetTrack()->GetParticleDefinition()->GetPDGEncoding()] += step->GetTotalEnergyDeposit();
 }
@@ -228,6 +250,8 @@ void Run::Manager::AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleCha
 {
   *(MuonCapture *)MuonCaptures.ConstructedAt(MuonCaptures.GetEntries()) = { *nucleus, *change };
 }
+
+void Run::Manager::AddEvent(const Event *event) { *(Event *)Events.ConstructedAt(Events.GetEntries()) = *event; }
 
 void Run::Manager::SaveCuts()
 {
