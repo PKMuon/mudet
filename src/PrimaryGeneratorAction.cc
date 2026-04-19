@@ -7,8 +7,6 @@
 
 #include "PrimaryGeneratorAction.hh"
 
-#include <iomanip>
-
 #include "DetectorConstruction.hh"
 #include "Object.hh"
 #include "Run.hh"
@@ -87,6 +85,7 @@ void PrimaryGeneratorAction::InputCRY() { InputState = 1; }
 void PrimaryGeneratorAction::UpdateCRY(std::string *MessInput)
 {
   CRYSetup *setup = new CRYSetup(*MessInput, CRY_DATA);
+  setup->setParam(CRYSetup::subboxLength, 2.0 * fmax(fDetectorHalfX, fDetectorHalfY) / m);
 
   gen = new CRYGenerator(setup);
 
@@ -143,49 +142,40 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
   //  << G4endl;
 
   Event event;
-  event.Reset();
   if(__builtin_expect(vect->empty(), false)) return;
   fNPrimary = 0;
-  for(unsigned j = 0, j0 = G4UniformRand() * vect->size(); j < vect->size(); j++) {
+  for(unsigned j = 0; j < vect->size(); j++) {
     ////....debug output
     //G4String particleName = CRYUtils::partName((*vect)[j]->id());
-    //cout << scientific << setprecision(2) << "  " << setw(12) << left << particleName
-    //  << "\tC=" << (*vect)[j]->charge()
-    //  << "\tE[MeV]=" << (*vect)[j]->ke()
-    //  << "\tX[m]=" << showpos << G4ThreeVector((*vect)[j]->x(), (*vect)[j]->y(), (*vect)[j]->z())
-    //  << "\tA=" << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), (*vect)[j]->w()) << noshowpos
-    //  << "\tT[s]=" << (*vect)[j]->t()
-    //  << endl;
+    //cout << scientific << setprecision(2) << "  " << setw(12) << left << particleName << "\tC=" <<
+    //(*vect)[j]->charge()
+    //     << "\tE[MeV]=" << (*vect)[j]->ke() << "\tX[m]=" << showpos
+    //     << G4ThreeVector((*vect)[j]->x(), (*vect)[j]->y(), (*vect)[j]->z())
+    //     << "\tA=" << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), (*vect)[j]->w()) << noshowpos
+    //     << "\tT[s]=" << (*vect)[j]->t() << endl;
 
-    if(j == j0) {  // Keep only one primary to avoid bad spatial normalization.
-      particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
-      particleGun->SetParticleEnergy((*vect)[j]->ke() * MeV);
-      //particleGun->SetParticlePosition(G4ThreeVector((*vect)[j]->x()*m, (*vect)[j]->y()*m, (*vect)[j]->z()*m +
-      //fDetectorMinZ));
-      particleGun->SetParticlePosition({
-          fDetectorHalfX * (2 * G4UniformRand() - 1),
-          fDetectorHalfY * (2 * G4UniformRand() - 1),
-          fDetectorMinZ,
-      });
-      particleGun->SetParticleMomentumDirection(G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), -(*vect)[j]->w()));
-      //particleGun->SetParticleTime((*vect)[j]->t() * s);
-      particleGun->SetParticleTime(0);
-      particleGun->GeneratePrimaryVertex(anEvent);
-      ++fNPrimary;
-      G4double mass = particleGun->GetParticleDefinition()->GetPDGMass(), e = particleGun->GetParticleEnergy() + mass;
-      event.Pid = particleGun->GetParticleDefinition()->GetPDGEncoding();
-      G4ThreeVector v = sqrt(e * e - mass * mass) * particleGun->GetParticleMomentumDirection();
-      event.Px = v.x();
-      event.Py = v.y();
-      event.Pz = v.z();
-      event.E = e;
-      v = particleGun->GetParticlePosition();
-      event.X = v.x();
-      event.Y = v.y();
-      event.Z = v.z();
-      event.T = particleGun->GetParticleTime();
-    }
+    event.Reset();
+    particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
+    particleGun->SetParticleEnergy((*vect)[j]->ke() * MeV);
+    particleGun->SetParticlePosition(
+        G4ThreeVector((*vect)[j]->x() * m, (*vect)[j]->y() * m, (*vect)[j]->z() * m + fDetectorMinZ));
+    particleGun->SetParticleMomentumDirection(G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), -(*vect)[j]->w()));
+    particleGun->SetParticleTime((*vect)[j]->t() * s);
+    particleGun->GeneratePrimaryVertex(anEvent);
+    ++fNPrimary;
+    G4double mass = particleGun->GetParticleDefinition()->GetPDGMass(), e = particleGun->GetParticleEnergy() + mass;
+    event.Pid = particleGun->GetParticleDefinition()->GetPDGEncoding();
+    G4ThreeVector v = sqrt(e * e - mass * mass) * particleGun->GetParticleMomentumDirection();
+    event.Px = v.x();
+    event.Py = v.y();
+    event.Pz = v.z();
+    event.E = e;
+    v = particleGun->GetParticlePosition();
+    event.X = v.x();
+    event.Y = v.y();
+    event.Z = v.z();
+    event.T = particleGun->GetParticleTime();
+    fRun->AddEvent(&event);
     delete(*vect)[j];
   }
-  fRun->AddEvent(&event);
 }

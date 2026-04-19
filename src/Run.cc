@@ -212,19 +212,19 @@ void Run::Manager::AddTrack(const G4Track *track)
 void Run::Manager::AddStep(const G4Step *step)
 {
   G4LogicalVolume *volume = step->GetTrack()->GetVolume()->GetLogicalVolume();
-  if(volume == GetTargetVolume() && step->IsFirstStepInVolume()) {
-    Event event;
-    event.Pid = step->GetTrack()->GetParticleDefinition()->GetPDGEncoding();
-    event.Px = step->GetTrack()->GetMomentum().x();
-    event.Py = step->GetTrack()->GetMomentum().y();
-    event.Pz = step->GetTrack()->GetMomentum().z();
-    event.E = step->GetTrack()->GetTotalEnergy();
-    event.X = step->GetTrack()->GetPosition().x();
-    event.Y = step->GetTrack()->GetPosition().y();
-    event.Z = step->GetTrack()->GetPosition().z();
-    event.T = step->GetTrack()->GetGlobalTime();
-    AddEvent(&event);
-  }
+  //if(volume == GetTargetVolume() && step->IsFirstStepInVolume()) {
+  //  Event event;
+  //  event.Pid = step->GetTrack()->GetParticleDefinition()->GetPDGEncoding();
+  //  event.Px = step->GetTrack()->GetMomentum().x();
+  //  event.Py = step->GetTrack()->GetMomentum().y();
+  //  event.Pz = step->GetTrack()->GetMomentum().z();
+  //  event.E = step->GetTrack()->GetTotalEnergy();
+  //  event.X = step->GetTrack()->GetPosition().x();
+  //  event.Y = step->GetTrack()->GetPosition().y();
+  //  event.Z = step->GetTrack()->GetPosition().z();
+  //  event.T = step->GetTrack()->GetGlobalTime();
+  //  AddEvent(&event);
+  //}
   if(volume != GetScoringVolume()) return;
   fEnergyDeposit[step->GetTrack()->GetParticleDefinition()->GetPDGEncoding()] += step->GetTotalEnergyDeposit();
 }

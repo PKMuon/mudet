@@ -79,9 +79,10 @@ G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &p
       ++nAuger;
       deltaE = 0.0 / 0.0;
       if(fMuDiracEnabled) deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, nLevel);
-      if(isnan(deltaE)) deltaE = fLevelEnergy[nLevel - 1] - fLevelEnergy[nLevel];
+      //if(isnan(deltaE)) deltaE = fLevelEnergy[nLevel - 1] - fLevelEnergy[nLevel];
+      if(isnan(deltaE)) deltaE = 0;
       --nLevel;
-      AddNewParticle(theElectron, deltaE);
+      if(deltaE) AddNewParticle(theElectron, deltaE);
 
     } else {
       // Case of photon cascade, probabilities from
@@ -93,9 +94,10 @@ G4HadFinalState *MuDiracEmCaptureCascade::ApplyYourself(const G4HadProjectile &p
       if(iLevel < 0) iLevel = 0;
       deltaE = 0.0 / 0.0;
       if(fMuDiracEnabled) deltaE = helper->GetTransitionEnergy(Z, A, nLevel + 1, iLevel + 1);
-      if(isnan(deltaE)) deltaE = fLevelEnergy[iLevel] - fLevelEnergy[nLevel];
+      //if(isnan(deltaE)) deltaE = fLevelEnergy[iLevel] - fLevelEnergy[nLevel];
+      if(isnan(deltaE)) deltaE = 0;
       nLevel = iLevel;
-      AddNewParticle(theGamma, deltaE);
+      if(deltaE) AddNewParticle(theGamma, deltaE);
     }
     edep += deltaE;
 
