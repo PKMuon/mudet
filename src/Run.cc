@@ -28,6 +28,7 @@
 
 #include <TClonesArray.h>
 #include <TFile.h>
+#include <TH1L.h>
 #include <TROOT.h>
 #include <TTree.h>
 #include <unistd.h>
@@ -72,10 +73,12 @@ public:
   void AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleChange *change);
   void AddEvent(const Event *event);
   void SaveCuts();
+  void SaveNMuon();
 
 private:
   TFile *fFile;
   TTree *fCuts;
+  TH1L *fNMuon;
   TClonesArray Edeps;
   TClonesArray Tracks;
   TClonesArray Cuts;
@@ -125,6 +128,7 @@ void Run::AutoSave()
 {
   fTree->AutoSave("SaveSelf, Overwrite");
   fManager->SaveCuts();
+  fManager->SaveNMuon();
 }
 
 void Run::FillAndReset()
@@ -169,6 +173,7 @@ void Run::Manager::Branch(TTree *tree)
   fFile->cd();
   fCuts = new TTree("cuts", "cuts");
   fCuts->Branch("Cuts", &Cuts);
+  fNMuon = new TH1L("nmuon", "nmuon", 1, -0.5, 0.5);
 }
 
 bool Run::Manager::PreFill()
@@ -234,11 +239,21 @@ void Run::Manager::AddMuonCapture(const G4Nucleus *nucleus, const G4VParticleCha
   *(MuonCapture *)MuonCaptures.ConstructedAt(MuonCaptures.GetEntries()) = { *nucleus, *change };
 }
 
-void Run::Manager::AddEvent(const Event *event) { *(Event *)Events.ConstructedAt(Events.GetEntries()) = *event; }
+void Run::Manager::AddEvent(const Event *event)
+{
+  *(Event *)Events.ConstructedAt(Events.GetEntries()) = *event;
+  if(abs(event->Pid) == 13) fNMuon->Fill(0);
+}
 
 void Run::Manager::SaveCuts()
 {
   *(::Cuts *)Cuts.ConstructedAt(0) = *GetScoringVolume();
   fCuts->Fill();
   fCuts->AutoSave("SaveSelf, Overwrite");
+}
+
+void Run::Manager::SaveNMuon()
+{
+  fFile->cd();
+  fNMuon->Write(NULL, fNMuon->kOverwrite);
 }
