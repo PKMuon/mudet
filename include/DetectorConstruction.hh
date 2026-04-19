@@ -36,7 +36,7 @@ public:
   ~DetectorConstruction() override;
 
   G4VPhysicalVolume *Construct() override;
-  G4double GetDetectorMinZ() const { return -(fHPGeLength * 0.5 + fBlockZ); }
+  G4double GetDetectorMinZ() const { return -(fHPGeLength * 0.5 + fBlockZ + fBlockMargin); }
   G4double GetDetectorHalfX() const { return fmax(fHPGeOuterR, fBlockX * 0.5); }
   G4double GetDetectorHalfY() const { return fmax(fHPGeOuterR, fBlockY * 0.5); }
 
@@ -44,7 +44,7 @@ private:
   G4double fWorldX, fWorldY, fWorldZ;
   G4double fTargetX, fTargetY, fTargetZ;
   G4double fHPGeInnerR, fHPGeOuterR, fHPGeLength;
-  G4double fBlockX, fBlockY, fBlockZ;
+  G4double fBlockX, fBlockY, fBlockZ, fBlockMargin;
 };
 
 #endif

@@ -42,18 +42,19 @@
 
 DetectorConstruction::DetectorConstruction()
 {
-  fTargetX = 2 * cm;
-  fTargetY = 2 * cm;
-  fTargetZ = 2 * cm;
-  fHPGeInnerR = 1.5 * cm;
-  fHPGeOuterR = 3.5 * cm;  // 2 cm thick
-  fHPGeLength = 15 * cm;
-  fBlockX = fHPGeOuterR * 2.0;
-  fBlockY = fHPGeOuterR * 2.0;
+  fTargetX = 10 * cm;
+  fTargetY = 10 * cm;
+  fTargetZ = 10 * cm;
+  fHPGeInnerR = 7.5 * cm;
+  fHPGeOuterR = 9.5 * cm;  // 2 cm thick
+  fHPGeLength = 2.0 * fTargetZ;
+  fBlockX = 2 * fHPGeOuterR;
+  fBlockY = 2 * fHPGeOuterR;
   fBlockZ = 20 * cm;
-  fWorldX = 1.2 * fBlockX;
-  fWorldY = 1.2 * fBlockY;
-  fWorldZ = 1.2 * (fHPGeLength + 2.0 * fBlockZ);
+  fBlockMargin = 2 * cm;
+  fWorldX = 1.2 * fmax(fTargetX, fmax(2.0 * fHPGeOuterR, fBlockX));
+  fWorldY = 1.2 * fmax(fTargetY, fmax(2.0 * fHPGeOuterR, fBlockY));
+  fWorldZ = 1.2 * (fHPGeLength + 2.0 * (fBlockZ + fBlockMargin));
 }
 
 DetectorConstruction::~DetectorConstruction() { }
@@ -153,7 +154,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
   block_vis.SetForceSolid();
   block_vis.SetColor(0.5, 0.5, 0.5, 0.5);
   block_l->SetVisAttributes(block_vis);
-  new G4PVPlacement(NULL, { 0, 0, -(fHPGeLength * 0.5 + fBlockZ * 0.5) }, block_l, "block", world_l, false, 0, true);
+  new G4PVPlacement(
+      NULL, { 0, 0, -(fHPGeLength * 0.5 + fBlockZ * 0.5 + fBlockMargin) }, block_l, "block", world_l, false, 0, true);
 
   ((PrimaryGeneratorAction *)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction())->Initialize(this);
 

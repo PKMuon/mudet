@@ -174,24 +174,6 @@ void Run::Manager::Branch(TTree *tree)
 bool Run::Manager::PreFill()
 {
   Int_t n = Tracks.GetEntries();
-
-  //// Inplace index sort.
-  //for(Int_t i = 0; i < n; ++i) {
-  //  auto track = (Track *)Tracks[i];
-  //  while(track->Id - 1 != i) {
-  //    if(track->Id <= 0 || track->Id > n) {
-  //      throw std::runtime_error("invalid track ID: " + std::to_string(track->Id));
-  //    }
-  //    if(((Track *)Tracks[track->Id - 1])->Id == track->Id) {
-  //      throw std::runtime_error("duplicate track ID: " + std::to_string(track->Id));
-  //    }
-  //    TObject *object = track;
-  //    std::swap(object, Tracks[track->Id - 1]);
-  //    track = (Track *)object;
-  //  }
-  //  Tracks[i] = track;
-  //}
-
   std::vector<Track *> tracks;
   for(Int_t i = 0; i < n; ++i) tracks.push_back((Track *)Tracks[i]);
   sort(tracks.begin(), tracks.end(), [](Track *a, Track *b) { return a->Id < b->Id; });
@@ -205,7 +187,8 @@ bool Run::Manager::PreFill()
   //G4cout << "Debug: Total energy deposit: " << edepSum / CLHEP::MeV << " MeV" << G4endl;
   fEnergyDeposit.clear();
 
-  return Events.GetEntries() > 1;  // [NOTE] Requires at least one incident particle to the target.
+  //return Events.GetEntries() > 1;  // [NOTE] Requires at least one incident particle to the target.
+  return Edeps.GetEntries() > 0;  // [NOTE] Requires at least one energy deposit in the scoring volume.
 }
 
 void Run::Manager::Reset()

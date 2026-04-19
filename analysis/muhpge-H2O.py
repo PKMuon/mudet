@@ -8,9 +8,12 @@ import matplotlib.pyplot as plt
 plt.figure(figsize=(15, 4))
 
 events = uproot.open(f"../build/tree/latest.root")["tree"].arrays(["Edeps.Edep", "Tracks.E", "Tracks.Pid"])
+#events = uproot.open(f"../build/tree/latest.root")["tree"].arrays(["Edeps.Edep", "Tracks.E", "Tracks.Pid", "Events.Pid"])
 print(f"Number of events: {len(events)}")
 events = events[ak.num(events["Edeps.Edep"], axis=1) >= 1]
 print(f"Number of events with at least one energy deposition: {len(events)}")
+#events = events[ak.num(events["Events.Pid"], axis=1) > 1]
+#print(f"Number of events with at least one particle on target: {len(events)}")
 
 gamma_energies = events["Tracks.E"][events["Tracks.Pid"] == 22]
 gamma_energies = ak.flatten(gamma_energies).to_numpy()
