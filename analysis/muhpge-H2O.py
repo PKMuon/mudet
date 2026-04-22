@@ -7,7 +7,12 @@ import matplotlib.pyplot as plt
 
 plt.figure(figsize=(15, 4))
 
-events = uproot.open(f"../build/tree/latest.root")["tree"].arrays(["Edeps.Edep", "Tracks.E", "Tracks.Pid"])
+file = uproot.open(f"../build/tree/latest.root")
+nmuon = int(file["nmuon"].to_numpy()[0][0])
+nmuon_one_year = 19 * 19 * 86400 * 365 // 60
+print(f"Number of incident muons: {nmuon} / {nmuon_one_year}")
+weight = nmuon_one_year / nmuon
+events = file["tree"].arrays(["Edeps.Edep", "Tracks.E", "Tracks.Pid"])
 #events = uproot.open(f"../build/tree/latest.root")["tree"].arrays(["Edeps.Edep", "Tracks.E", "Tracks.Pid", "Events.Pid"])
 print(f"Number of events: {len(events)}")
 events = events[ak.num(events["Edeps.Edep"], axis=1) >= 1]
@@ -20,12 +25,17 @@ gamma_energies = ak.flatten(gamma_energies).to_numpy()
 print(f"Number of gammas: {len(gamma_energies)}")
 total_edep = ak.sum(events["Edeps.Edep"], axis=1).to_numpy()
 
-for i, (cut, bins) in enumerate([((0.000, 0.200), 100), ((0.120, 0.150), 30), ((0.145, 0.175), 30)], 1):
+for i, (cut, bins) in enumerate([((0.000, 0.200), 100), ((0.110, 0.160), 50), ((0.135, 0.185), 50)], 1):
     plt.subplot(1, 3, i)
-    plt.hist(gamma_energies, bins=bins, range=cut, weights=np.ones_like(gamma_energies), histtype="step", label=f"Geant4/MuDirac $E_\\gamma$")
-    plt.hist(total_edep, bins=bins, range=cut, histtype="step", label=f"HPGe $E_\\mathrm{{dep}}$")
+
+    n, bins_, _ = plt.hist(gamma_energies, bins=bins, range=cut, weights=np.ones_like(gamma_energies) * weight, histtype="step", color="blue", label=f"Geant4/MuDirac $E_\\gamma$")
+    plt.errorbar(0.5 * (bins_[:-1] + bins_[1:]), n, yerr=np.sqrt(n / weight) * weight, fmt="none", color="blue", elinewidth=1.0, capsize=0)
+
+    n, bins_, _ = plt.hist(total_edep, bins=bins, range=cut, weights=np.ones_like(total_edep) * weight, histtype="step", color="red", label=f"HPGe $E_\\mathrm{{dep}}$")
+    plt.errorbar(0.5 * (bins_[:-1] + bins_[1:]), n, yerr=np.sqrt(n / weight) * weight, fmt="none", color="red", elinewidth=1.0, capsize=0)
+
     plt.xlabel(r"$E$ [MeV]")
-    plt.ylabel("Events")
+    plt.ylabel("Events / year")
     plt.legend()
     plt.grid()
 
