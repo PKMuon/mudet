@@ -38,7 +38,7 @@
 #include "QGSP_BERT_HP.hh"
 #include "Randomize.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+int64_t seed = -1;
 
 int main(int argc, char **argv)
 {
@@ -54,7 +54,12 @@ int main(int argc, char **argv)
   // Optionally: choose a different Random engine...
   // G4Random::setTheEngine(new CLHEP::MTwistEngine);
 
-  CLHEP::HepRandom::setTheSeed(time(0) ^ getpid());
+  if(argc > 2) seed = std::stoull(argv[2]);
+  if(seed != -1) {
+    CLHEP::HepRandom::setTheSeed(seed);
+  } else {
+    CLHEP::HepRandom::setTheSeed(getpid());
+  }
 
   //use G4SteppingVerboseWithUnits
   G4int precision = 4;

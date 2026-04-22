@@ -25,7 +25,7 @@ gamma_energies = ak.flatten(gamma_energies).to_numpy()
 print(f"Number of gammas: {len(gamma_energies)}")
 total_edep = ak.sum(events["Edeps.Edep"], axis=1).to_numpy()
 
-for i, (cut, bins) in enumerate([((0.000, 0.200), 100), ((0.110, 0.160), 50), ((0.135, 0.185), 50)], 1):
+for i, (cut, bins) in enumerate([((0.050, 0.200), 150), ((0.130, 0.140), 10), ((0.155, 0.165), 10)], 1):
     plt.subplot(1, 3, i)
 
     n, bins_, _ = plt.hist(gamma_energies, bins=bins, range=cut, weights=np.ones_like(gamma_energies) * weight, histtype="step", color="blue", label=f"Geant4/MuDirac $E_\\gamma$")

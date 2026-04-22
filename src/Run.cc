@@ -102,7 +102,8 @@ G4LogicalVolume *Run::Manager::GetTargetVolume()
 
 Run::Run()
 {
-  G4String filename = fDirName + "/" + std::to_string(gettid()) + ".root";
+  extern int64_t seed;
+  G4String filename = fDirName + "/" + std::to_string(seed == -1 ? gettid() : seed) + ".root";
   auto parent = fs::path(filename.c_str()).parent_path();
   if(!parent.empty()) fs::create_directories(parent);
 

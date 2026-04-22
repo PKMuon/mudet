@@ -46,6 +46,10 @@ G4VParticleChange *MuDiracMuonMinusAtomicCapture::AtRestDoIt(const G4Track &trac
     theTotalResult->Initialize(track);
     return theTotalResult;
   }
+  if(targetNucleus.GetZ_asInt() == 82) {  // Disabled for diagnostics.
+    theTotalResult->Initialize(track);
+    return theTotalResult;
+  }
 
   Run *run = ((RunAction *)G4RunManager::GetRunManager()->GetUserRunAction())->GetRun();
   G4VParticleChange *change = G4MuonMinusAtomicCapture_11_3_2::AtRestDoIt(track, step);

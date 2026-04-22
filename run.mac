@@ -9,5 +9,5 @@
 #
 /control/execute Cry.mac
 #/run/setCut 0.7 mm
-/run/printProgress 1000
-/run/beamOn 100000
+/run/printProgress 10000
+/run/beamOn 1000000
