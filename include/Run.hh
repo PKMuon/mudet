@@ -56,9 +56,9 @@ private:
   Manager *fManager;
 
 protected:
-  static G4String fDirName;
-  static G4String fTreeName;
-  static G4String fTreeTitle;
+  G4String fDirName;
+  G4String fTreeName;
+  G4String fTreeTitle;
   TFile *fFile;
   TTree *fTree;
 };

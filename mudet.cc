@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
   if(argc > 2) seed = std::stoull(argv[2]);
   if(seed != -1) {
-    CLHEP::HepRandom::setTheSeed(seed);
+    CLHEP::HepRandom::setTheSeed(seed + 1);
   } else {
     CLHEP::HepRandom::setTheSeed(getpid());
   }

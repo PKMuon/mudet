@@ -45,6 +45,8 @@
 
 namespace fs = std::filesystem;
 
+extern int64_t seed;
+
 namespace {
 
 struct ROOTInitializer {
@@ -52,10 +54,6 @@ struct ROOTInitializer {
 } rootInitializer [[maybe_unused]];
 
 }  //namespace
-
-G4String Run::fDirName = "tree/" + std::to_string(getpid());
-G4String Run::fTreeName = "tree";
-G4String Run::fTreeTitle = "tree";
 
 class Run::Manager {
 public:
@@ -102,8 +100,11 @@ G4LogicalVolume *Run::Manager::GetTargetVolume()
 
 Run::Run()
 {
-  extern int64_t seed;
-  G4String filename = fDirName + "/" + std::to_string(seed == -1 ? gettid() : seed) + ".root";
+  fDirName = "tree/" + std::to_string(seed == -1 ? getpid() : seed);
+  fTreeName = "tree";
+  fTreeTitle = "tree";
+
+  G4String filename = fDirName + "/" + std::to_string(gettid()) + ".root";
   auto parent = fs::path(filename.c_str()).parent_path();
   if(!parent.empty()) fs::create_directories(parent);
 
